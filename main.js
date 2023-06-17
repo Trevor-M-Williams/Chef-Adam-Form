@@ -1,34 +1,39 @@
 Webflow.push(function () {
   window.addEventListener("click", handleStepChange);
 
+  let userInput = JSON.parse(sessionStorage.getItem("userInput")) || {};
   let menuState = JSON.parse(sessionStorage.getItem("menuState")) || {};
   let formSteps = [];
   let currentStep = 0;
 
   initMenu();
   initFormSteps();
-  initRadios();
-  updateTotal();
+  initHomeYachtCards();
 
-  function handleHomeYachtChange(e) {
+  function handleHomeYachtSelect(e) {
     formSteps = [];
     initFormSteps();
-    if (e.target.value === "home") {
-      const homeSteps = document
-        .getElementById("home-form")
-        .querySelectorAll("[data-step]");
-      homeSteps.forEach((step) => formSteps.push(step));
+    const card = e.target.parentNode;
+    card.classList.add("selected");
+    if (card.id === "home-card") {
+      const homeStep = document.getElementById("home-form");
+      formSteps.push(homeStep);
+
+      const yachtCard = document.getElementById("yacht-card");
+      yachtCard.classList.remove("selected");
     } else {
-      const yachtSteps = document
-        .getElementById("yacht-form")
-        .querySelectorAll("[data-step]");
-      yachtSteps.forEach((step) => formSteps.push(step));
+      const yachtStep = document.getElementById("yacht-form");
+      formSteps.push(yachtStep);
+
+      const homeCard = document.getElementById("home-card");
+      homeCard.classList.remove("selected");
     }
+    const lastStep = document.querySelector("[data-last]");
+    formSteps.push(lastStep);
   }
 
   function handleQuantityChange(e) {
     updateState(e);
-    updateTotal();
   }
 
   function handleStepChange(e) {
@@ -52,17 +57,46 @@ Webflow.push(function () {
     allValid = [...inputs].every((input) => input.reportValidity());
     if (incrementor > 0 && !allValid) return;
 
+    if (currentStep === 2) {
+      inputs.forEach((input) => {
+        userInput[input.name] = input.value;
+      });
+      sessionStorage.setItem("userInput", JSON.stringify(userInput));
+    }
+
     showCurrentStep(incrementor);
+    if (currentStep === formSteps.length - 1) initForm();
   }
 
-  function initCart() {
-    console.log("init cart");
+  function initForm() {
+    const lastStep = document.querySelector("[data-last]");
+    const form = lastStep.querySelector("form");
+
+    // create inputs for userInput items
+    for (let item in userInput) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = item;
+      input.value = userInput[item];
+      form.appendChild(input);
+    }
+
+    // create inputs for menuState items
+    for (let item in menuState) {
+      const quantity = menuState[item].quantity;
+      if (quantity === 0) continue;
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = item;
+      input.value = quantity;
+      form.appendChild(input);
+    }
   }
 
   function initFormSteps() {
-    const menuStep = document.querySelector("[data-first]");
-    const radioStep = document.querySelector("[data-second]");
-    formSteps.push(menuStep, radioStep);
+    const firstStep = document.querySelector("[data-first]");
+    const secondStep = document.querySelector("[data-second]");
+    formSteps.push(firstStep, secondStep);
   }
 
   function initMenu() {
@@ -71,13 +105,9 @@ Webflow.push(function () {
 
     menuItems.forEach((item, i) => {
       const name = item.querySelector(".menu-item-name").textContent;
-      const price = parseInt(
-        item.querySelector(".menu-item-price").textContent
-      );
       const input = quantityInputs[i];
       menuState[name] = {
         quantity: menuState[name]?.quantity || 0,
-        price,
         input,
       };
     });
@@ -89,17 +119,17 @@ Webflow.push(function () {
     }
   }
 
-  function initRadios() {
-    const homeYachtRadios = document.querySelectorAll("[name=home-yacht]");
-    homeYachtRadios.forEach((radio) => {
-      radio.addEventListener("change", handleHomeYachtChange);
+  function initHomeYachtCards() {
+    const homeYachtCards = document.querySelectorAll(".home-yacht-card");
+    homeYachtCards.forEach((card) => {
+      card.addEventListener("click", handleHomeYachtSelect);
     });
   }
 
   function showCurrentStep(incrementor) {
     formSteps[currentStep].style.display = "none";
     currentStep += incrementor;
-    formSteps[currentStep].style.display = "flex";
+    formSteps[currentStep].style.display = "block";
   }
 
   function updateCart() {
@@ -128,14 +158,5 @@ Webflow.push(function () {
       .closest(".menu-item")
       .querySelector(".menu-item-name").textContent;
     menuState[name].quantity = quantity;
-  }
-
-  function updateTotal() {
-    const total = document.querySelector(".total");
-    let totalPrice = 0;
-    for (let dish in menuState) {
-      totalPrice += menuState[dish].quantity * menuState[dish].price;
-    }
-    total.textContent = "$" + totalPrice;
   }
 });
