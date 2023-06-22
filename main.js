@@ -5,6 +5,7 @@ Webflow.push(function () {
   let menuState = JSON.parse(sessionStorage.getItem("menuState")) || {};
   let formSteps = [];
   let currentStep = 0;
+  let homeYacht;
 
   initMenu();
   initFormSteps();
@@ -13,27 +14,29 @@ Webflow.push(function () {
   function handleHomeYachtSelect(e) {
     formSteps = [];
     initFormSteps();
+
     const card = e.target.parentNode;
     card.classList.add("selected");
+
+    const homeYachtErrorMessage = document.querySelector(".error.home-yacht");
+    homeYachtErrorMessage.classList.remove("active");
+
     if (card.id === "home-card") {
+      homeYacht = "home";
       const homeStep = document.getElementById("home-form");
       formSteps.push(homeStep);
-
       const yachtCard = document.getElementById("yacht-card");
       yachtCard.classList.remove("selected");
     } else {
+      homeYacht = "yacht";
       const yachtStep = document.getElementById("yacht-form");
       formSteps.push(yachtStep);
-
       const homeCard = document.getElementById("home-card");
       homeCard.classList.remove("selected");
     }
+
     const lastStep = document.querySelector("[data-last]");
     formSteps.push(lastStep);
-  }
-
-  function handleQuantityChange(e) {
-    updateState(e);
   }
 
   function handleStepChange(e) {
@@ -47,10 +50,41 @@ Webflow.push(function () {
     if (incrementor == null) return;
 
     if (currentStep === 0) {
-      updateCart();
-      sessionStorage.setItem("menuState", JSON.stringify(menuState));
-      showCurrentStep(incrementor);
-      return;
+      if (!homeYacht) {
+        const homeYachtErrorMessage =
+          document.querySelector(".error.home-yacht");
+        homeYachtErrorMessage.classList.add("active");
+        return;
+      }
+    }
+
+    if (currentStep === 1 && incrementor > 0) {
+      let itemSelected = false;
+      for (let item in menuState) {
+        if (menuState[item].quantity > 0) {
+          itemSelected = true;
+          break;
+        }
+      }
+
+      if (!itemSelected) {
+        const menuErrorMessage = document.querySelector(".error.menu");
+        menuErrorMessage.classList.add("active");
+        return;
+      }
+
+      const removeButtons = document.querySelectorAll(
+        "[data-wf-cart-action='remove-item']"
+      );
+      removeButtons.forEach((button) => button.click());
+
+      for (let item in menuState) {
+        if (menuState[item].quantity > 0) {
+          setTimeout(() => {
+            menuState[item].addToCartButton.click();
+          }, 1000);
+        }
+      }
     }
 
     const inputs = formSteps[currentStep].querySelectorAll("input, textarea");
@@ -65,7 +99,10 @@ Webflow.push(function () {
     }
 
     showCurrentStep(incrementor);
-    if (currentStep === formSteps.length - 1) initForm();
+    if (currentStep === formSteps.length - 1) {
+      initForm();
+      initReview();
+    }
   }
 
   function initForm() {
@@ -102,6 +139,9 @@ Webflow.push(function () {
   function initMenu() {
     const menuItems = document.querySelectorAll(".menu-item");
     const quantityInputs = document.querySelectorAll(".menu-item-quantity");
+    const addToCartButtons = document.querySelectorAll(
+      "[data-node-type='commerce-add-to-cart-button']"
+    );
 
     menuItems.forEach((item, i) => {
       const name = item.querySelector(".menu-item-name").textContent;
@@ -109,11 +149,12 @@ Webflow.push(function () {
       menuState[name] = {
         quantity: menuState[name]?.quantity || 0,
         input,
+        addToCartButton: addToCartButtons[i],
       };
     });
 
     for (let dish in menuState) {
-      menuState[dish].input.addEventListener("change", handleQuantityChange);
+      menuState[dish].input.addEventListener("change", updateMenuState);
       menuState[dish].input.value = menuState[dish].quantity;
       menuState[dish].input.min = 0;
     }
@@ -126,37 +167,48 @@ Webflow.push(function () {
     });
   }
 
+  function initReview() {
+    const reviewInfo = document.querySelector(".review-info");
+    // create review items for userInput items
+    for (let item in userInput) {
+      const reviewItem = document.createElement("div");
+      reviewItem.classList.add("review-item");
+      reviewItem.innerHTML = `
+          <div class="review-item-name">${item}</div>
+          <div class="review-item-value">${userInput[item]}</div>
+      `;
+      reviewInfo.appendChild(reviewItem);
+    }
+
+    // create review items for menuState items
+    for (let item in menuState) {
+      const quantity = menuState[item].quantity;
+      if (quantity === 0) continue;
+      const reviewItem = document.createElement("div");
+      reviewItem.classList.add("review-item");
+      reviewItem.innerHTML = `
+          <div class="review-item-name">${item}</div>
+          <div class="review-item-value">${quantity}</div>
+      `;
+      reviewInfo.appendChild(reviewItem);
+    }
+  }
+
   function showCurrentStep(incrementor) {
     formSteps[currentStep].style.display = "none";
     currentStep += incrementor;
     formSteps[currentStep].style.display = "block";
   }
 
-  function updateCart() {
-    const removeItemBtns = document.querySelectorAll(
-      "[data-wf-cart-action='remove-item']"
-    );
-    removeItemBtns.forEach((btn) => btn.click());
-
-    const qualityInputs = document.querySelectorAll(".menu-item-quantity");
-    const addToCartBtns = document.querySelectorAll(
-      ".w-commerce-commerceaddtocartbutton"
-    );
-
-    qualityInputs.forEach((input, i) => {
-      if (parseInt(input.value) > 0) {
-        setTimeout(() => {
-          addToCartBtns[i].click();
-        }, 1000);
-      }
-    });
-  }
-
-  function updateState(e) {
+  function updateMenuState(e) {
     const quantity = parseInt(e.target.value);
     const name = e.target
       .closest(".menu-item")
       .querySelector(".menu-item-name").textContent;
     menuState[name].quantity = quantity;
+    sessionStorage.setItem("menuState", JSON.stringify(menuState));
+
+    const menuErrorMessage = document.querySelector(".error.menu");
+    menuErrorMessage.classList.remove("active");
   }
 });
