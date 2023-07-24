@@ -78,12 +78,15 @@ Webflow.push(function () {
       );
       removeButtons.forEach((button) => button.click());
 
-      for (let item in menuState) {
-        if (menuState[item].quantity > 0) {
-          setTimeout(() => {
-            menuState[item].addToCartButton.click();
-          }, 1000);
-        }
+      const keys = Object.keys(menuState);
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        const quantity = menuState[key].quantity;
+        if (quantity === 0) continue;
+        const addToCartButton = menuState[key].addToCartButton;
+        setTimeout(() => {
+          addToCartButton.click();
+        }, i * 250 + 500);
       }
     }
 
@@ -169,6 +172,11 @@ Webflow.push(function () {
 
   function initReview() {
     const reviewInfo = document.querySelector(".review-info");
+    //remove all children
+    while (reviewInfo.firstChild) {
+      reviewInfo.removeChild(reviewInfo.firstChild);
+    }
+
     // create review items for userInput items
     for (let item in userInput) {
       const reviewItem = document.createElement("div");
