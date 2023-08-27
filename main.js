@@ -499,7 +499,7 @@ Webflow.push(function () {
       input.type = item.type;
       if (item.type === "date") {
         input.min = new Date().toISOString().split("T")[0];
-        // input.onchange = handleDate;
+        input.style.width = "100% !important";
       }
       input.name = item.name;
       input.required = true;
@@ -508,19 +508,6 @@ Webflow.push(function () {
       if (userInput["event-info"][item.name])
         input.value = userInput["event-info"][item.name];
     });
-
-    // function handleDate(e) {
-    //   const dateStr = e.target.value;
-    //   const timeStr = userInput["event-info"]["time"];
-    //   const eventDate = new Date(`${dateStr}T${timeStr}:00`);
-    //   const now = new Date();
-    //   const diff = eventDate - now;
-    //   const hours = Math.floor(diff / 1000 / 60 / 60);
-    //   if (hours < 48) {
-    //     showError("For events within 48 hours, please call 954-406-1375");
-    //     return false;
-    //   }
-    // }
   }
 
   function initServiceOptions() {
