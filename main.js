@@ -495,7 +495,7 @@ Webflow.push(function () {
       inputWrapper.appendChild(label);
 
       const input = document.createElement("input");
-      input.classList.add("input", "w-input");
+      if (input.type !== "date") input.classList.add("input", "w-input");
       input.type = item.type;
       if (item.type === "date") {
         input.min = new Date().toISOString().split("T")[0];
@@ -521,6 +521,11 @@ Webflow.push(function () {
   }
 
   function initForm() {
+    const safariMobile = isSafariMobile();
+    if (safariMobile) {
+      document.body.overflow = "hidden";
+    }
+
     if (!userInput["meal-plan-info"]) userInput["meal-plan-info"] = {};
     if (!userInput["contact-info"]) userInput["contact-info"] = {};
     if (!userInput["event-info"]) userInput["event-info"] = {};
@@ -577,6 +582,13 @@ Webflow.push(function () {
         user-select: none;
       }
   `;
+
+    function isSafariMobile() {
+      return (
+        /AppleWebKit/.test(navigator.userAgent) &&
+        /Mobile/.test(navigator.userAgent)
+      );
+    }
   }
 
   function initFormSteps() {
