@@ -62,8 +62,8 @@ Webflow.push(function () {
       "meal-plan": [
         "service",
         "contact-info",
-        "athlete-info",
-        "athlete-pricing",
+        "meal-plan-info",
+        "meal-plan-pricing",
         "review",
       ],
     };
@@ -267,7 +267,7 @@ Webflow.push(function () {
         break;
       case "menu":
         break;
-      case "athlete-pricing":
+      case "meal-plan-pricing":
         if (!userInput["service-info"]["meal-plan"]) {
           showError("Please select a meal plan");
           return;
@@ -428,18 +428,18 @@ Webflow.push(function () {
 
   function initAthleteInfo() {
     const athleteInfoStep = document.querySelector(
-      "[data-step='athlete-info']"
+      "[data-step='meal-plan-info']"
     );
     const inputs = athleteInfoStep.querySelectorAll("input, textarea");
 
     inputs.forEach((input) => {
-      if (userInput["athlete-info"][input.name]) {
+      if (userInput["meal-plan-info"][input.name]) {
         if (input.type === "checkbox") {
-          input.checked = userInput["athlete-info"][input.name];
+          input.checked = userInput["meal-plan-info"][input.name];
         } else if (input.type === "radio") {
-          if (input.value === userInput["athlete-info"][input.name])
+          if (input.value === userInput["meal-plan-info"][input.name])
             input.checked = true;
-        } else input.value = userInput["athlete-info"][input.name];
+        } else input.value = userInput["meal-plan-info"][input.name];
       }
     });
   }
@@ -534,7 +534,7 @@ Webflow.push(function () {
   }
 
   function initForm() {
-    if (!userInput["athlete-info"]) userInput["athlete-info"] = {};
+    if (!userInput["meal-plan-info"]) userInput["meal-plan-info"] = {};
     if (!userInput["contact-info"]) userInput["contact-info"] = {};
     if (!userInput["event-info"]) userInput["event-info"] = {};
     if (!userInput["service-info"]) userInput["service-info"] = {};
@@ -585,7 +585,7 @@ Webflow.push(function () {
         display: none !important;
       }
 
-      .athlete-pricing-option {
+      .meal-plan-pricing-option {
         cursor: pointer;
         user-select: none;
       }
@@ -607,19 +607,19 @@ Webflow.push(function () {
       formSteps.push(stepElement);
       if (step === "service") return;
       formStepWrapper.appendChild(stepElement);
-
-      if (step === "venue") initVenueOptions();
     });
   }
 
   function initMealPlanPricing() {
     const mealPlanLinks = [
-      "https://checkout.stripe.com/c/pay/cs_live_b1EOL9FLG8zPkbVYtWYlBIftJsG5QlWqhjIhI18dQTNnWIMJF9cgOJ8Hle#fidkdWxOYHwnPyd1blppbHNgWjA0SGFhfVJCYHRtV0ZObElwdEo3dWMwdnxIUz02dGJORG9EXVVCcFJ2MExPVnBAfFVcam1PZmtkNn1kRzBiTWlobkdDMTdSYW5OUjRRMzBUM0xhZ21GTkM0NTVpUkFBdndJQycpJ3VpbGtuQH11anZgYUxhJz8nNmZ2YVdLYGJTNlxqYkRQNTVwJyknd2BjYHd3YHdKd2xibGsnPydtcXF1dj8qKmdqam4rZm1gY2RhZGh2YHdqcWQrZmpoKid4JSUl",
-      "https://checkout.stripe.com/c/pay/cs_live_b1ig0YwIcOi1A8QK6Y2yTUisPKLbxWfsYV2Z5ZEPyrNRSrflZodT2ILd51#fidkdWxOYHwnPyd1blppbHNgWjA0SGFhfVJCYHRtV0ZObElwdEo3dWMwdnxIUz02dGJORG9EXVVCcFJ2MExPVnBAfFVcam1PZmtkNn1kRzBiTWlobkdDMTdSYW5OUjRRMzBUM0xhZ21GTkM0NTVpUkFBdndJQycpJ3VpbGtuQH11anZgYUxhJz8nNmZ2M3VpMUJpNFRiNUdSNTVxJyknd2BjYHd3YHdKd2xibGsnPydtcXF1dj8qKmdqam4rZm1gY2RhZGh2YHdqcWQrZmpoKid4JSUl",
-      "https://checkout.stripe.com/c/pay/cs_live_b1tiCS6P0xhQz4xEvNSHjyfo07cbdsFpoVQOLXyk3up86BFW1FsNDJZbqT#fidkdWxOYHwnPyd1blppbHNgWjA0SGFhfVJCYHRtV0ZObElwdEo3dWMwdnxIUz02dGJORG9EXVVCcFJ2MExPVnBAfFVcam1PZmtkNn1kRzBiTWlobkdDMTdSYW5OUjRRMzBUM0xhZ21GTkM0NTVpUkFBdndJQycpJ3VpbGtuQH11anZgYUxhJz8nMG5EZktPNkZtPGxMNko9M2pUJyknd2BjYHd3YHdKd2xibGsnPydtcXF1dj8qKmdqam4rZm1gY2RhZGh2YHdqcWQrZmpoKid4JSUl",
+      "https://buy.stripe.com/3csdRNegV3YogAU00u",
+      "https://buy.stripe.com/3cs6pl4Gl1Qg0BW00t",
+      "https://buy.stripe.com/5kAcNJ3Ch9iI3O86oQ",
     ];
 
-    const pricingStep = document.querySelector("[data-step='athlete-pricing']");
+    const pricingStep = document.querySelector(
+      "[data-step='meal-plan-pricing']"
+    );
     const mealPlanOptions = pricingStep.querySelectorAll(".form-option");
 
     mealPlanOptions.forEach((option, i) => {
@@ -642,6 +642,8 @@ Webflow.push(function () {
       const mealPlanLink = mealPlanLinks[i];
       userInput["service-info"]["meal-plan"] = mealPlan;
       userInput["checkout-link"] = mealPlanLink;
+
+      updateStep(1);
 
       sessionStorage.setItem("userInput", JSON.stringify(userInput));
     }
@@ -695,7 +697,7 @@ Webflow.push(function () {
 
     let infoCategories = ["service-info", "contact-info", "event-info"];
     if (userInput["service-info"]["service"] === "meal-plan") {
-      infoCategories = ["service-info", "contact-info", "athlete-info"];
+      infoCategories = ["service-info", "contact-info", "meal-plan-info"];
     }
 
     for (let category in infoCategories) {
@@ -778,7 +780,7 @@ Webflow.push(function () {
       athleteTitle.textContent = "Athlete Info:";
       reviewInfo.appendChild(athleteTitle);
 
-      const athleteInfo = userInput["athlete-info"];
+      const athleteInfo = userInput["meal-plan-info"];
       for (let item in athleteInfo) {
         const reviewItem = document.createElement("div");
         const label = item.replaceAll("-", " ");
@@ -950,8 +952,8 @@ Webflow.push(function () {
       ["contact-info"]: "Contact information",
       ["yacht-contact-info"]: "Contact Information",
       ["event-info"]: "Event information",
-      ["athlete-info"]: "Athlete Information",
-      ["athlete-pricing"]: "Meal Plan Options",
+      ["meal-plan-info"]: "Athlete Information",
+      ["meal-plan-pricing"]: "Meal Plan Options",
       ["additional-info"]: "Additional information",
       review: "Review",
     };
@@ -967,8 +969,8 @@ Webflow.push(function () {
       ["yacht-contact-info"]:
         "Enter your charter broker's contact information.",
       ["event-info"]: "Tell us more about the event.",
-      ["athlete-info"]: "Enter your athlete's information.",
-      ["athlete-pricing"]: "Select your meal plan.",
+      ["meal-plan-info"]: "Enter your athlete's information.",
+      ["meal-plan-pricing"]: "Select your meal plan.",
       ["additional-info"]: "Enter any additional information.",
       review: "Review your order and submit when ready.",
     };
@@ -1053,10 +1055,10 @@ Webflow.push(function () {
       case "event-info":
         initEventInfo();
         break;
-      case "athlete-info":
+      case "meal-plan-info":
         initAthleteInfo();
         break;
-      case "athlete-pricing":
+      case "meal-plan-pricing":
         initMealPlanPricing();
         break;
       default:
