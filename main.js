@@ -1,5 +1,6 @@
 Webflow.push(function () {
   window.addEventListener("click", handleStepChange);
+  window.addEventListener("resize", initButtons);
 
   let userInput = JSON.parse(sessionStorage.getItem("userInput")) || {};
   let menuState = JSON.parse(sessionStorage.getItem("menuState")) || {};
@@ -11,6 +12,10 @@ Webflow.push(function () {
   const animationDuration = 400;
   const allSteps = document.querySelectorAll(".form-step");
 
+  let backButton;
+  let nextButton;
+
+  initButtons();
   initForm();
 
   function handleServiceSelect(e) {
@@ -74,9 +79,17 @@ Webflow.push(function () {
     hideError();
   }
 
-  function handleFormError() {
-    console.log("Error!");
+  function initButtons() {
+    if (window.innerWidth > 479) {
+      backButton = document.querySelector("#back-arrow");
+      nextButton = document.querySelector("#next-arrow");
+    } else {
+      backButton = document.querySelector("#back-button");
+      nextButton = document.querySelector("#next-button");
+    }
+  }
 
+  function handleFormError() {
     let errorBlock = document.querySelector(".order-form-error");
     errorBlock.style.opacity = 1;
 
@@ -87,13 +100,8 @@ Webflow.push(function () {
   }
 
   function handleFormSuccess() {
-    console.log("Success!");
-
     const progressBar = document.querySelector(".form-progress-bar");
     progressBar.style.width = `100%`;
-
-    const progressPercent = document.querySelector(".form-progress-percent");
-    progressPercent.textContent = `100%`;
 
     const formButtons = document.querySelector(".form-button-group");
     formButtons.style.display = "none";
@@ -588,13 +596,16 @@ Webflow.push(function () {
     formSteps = [];
 
     const formStepWrapper = document.querySelector(".form-step-wrapper");
-    formStepWrapper.innerHTML = "";
+    while (formStepWrapper.children.length > 1) {
+      formStepWrapper.removeChild(formStepWrapper.lastChild);
+    }
 
     formFlow.forEach((step) => {
       const stepElement = [...allSteps].find(
         (element) => element.dataset.step === step
       );
       formSteps.push(stepElement);
+      if (step === "service") return;
       formStepWrapper.appendChild(stepElement);
 
       if (step === "venue") initVenueOptions();
@@ -637,10 +648,10 @@ Webflow.push(function () {
   }
 
   function initMenu(menuType) {
-    if (menuType === "private-event-menu") {
-      initPrivateEventMenu();
-      return;
-    } else if (menuType === "performance-catering-menu") {
+    if (
+      menuType === "private-event-menu" ||
+      menuType === "performance-catering-menu"
+    ) {
       return;
     }
 
@@ -668,10 +679,6 @@ Webflow.push(function () {
       menuState[menuType][dish].input.value =
         menuState[menuType][dish].quantity;
       menuState[menuType][dish].input.min = 0;
-    }
-
-    function initPrivateEventMenu() {
-      // const step = document.querySelector(`[data-step='private-event-menu']`);
     }
   }
 
@@ -902,9 +909,6 @@ Webflow.push(function () {
   }
 
   function updateButtons() {
-    const backButton = document.querySelector("#back-arrow");
-    const nextButton = document.querySelector("#next-arrow");
-
     backButton.draggable = false;
     nextButton.draggable = false;
 
@@ -923,7 +927,7 @@ Webflow.push(function () {
       backButton.style.pointerEvents = "auto";
     }
 
-    if (formSteps[stepIndex] === "review") {
+    if (formFlow[stepIndex] === "review") {
       nextButton.style.opacity = 0;
       nextButton.style.pointerEvents = "none";
     } else {
@@ -989,9 +993,6 @@ Webflow.push(function () {
     const completedSteps = stepIndex;
     const progressPercentage = (completedSteps / totalSteps) * 100;
     progressBar.style.width = `${progressPercentage}%`;
-
-    const progressPercent = document.querySelector(".form-progress-percent");
-    progressPercent.textContent = `${Math.floor(progressPercentage)}%`;
   }
 
   function updateStep(incrementor) {
