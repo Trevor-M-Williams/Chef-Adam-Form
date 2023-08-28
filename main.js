@@ -619,9 +619,7 @@ Webflow.push(function () {
       const chromeAgent = navigator.userAgent.indexOf("Chrome") > -1;
       const safariAgent = navigator.userAgent.indexOf("Safari") > -1;
 
-      logToModal(`CA: ${chromeAgent}`);
-      logToModal(`SA: ${safariAgent}`);
-      logToModal(window.innerWidth);
+      logToModal(navigator.userAgent);
 
       return safariAgent && !chromeAgent && window.innerWidth < 479;
     }
