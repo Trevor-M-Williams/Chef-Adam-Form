@@ -522,12 +522,6 @@ Webflow.push(function () {
   }
 
   function initForm() {
-    const safariMobile = isSafariMobile();
-    logToModal(safariMobile);
-    if (safariMobile) {
-      document.body.overflow = "hidden";
-    }
-
     if (!userInput["meal-plan-info"]) userInput["meal-plan-info"] = {};
     if (!userInput["contact-info"]) userInput["contact-info"] = {};
     if (!userInput["event-info"]) userInput["event-info"] = {};
@@ -558,6 +552,12 @@ Webflow.push(function () {
     // DEV ONLY!
     // initDevButtons();
     initLogModal();
+
+    const safariMobile = isSafariMobile();
+    logToModal(safariMobile);
+    if (safariMobile) {
+      document.body.overflow = "hidden";
+    }
 
     const serviceLink = sessionStorage.getItem("serviceLink");
     if (serviceLink) {
