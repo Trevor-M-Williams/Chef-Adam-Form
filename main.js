@@ -1125,7 +1125,7 @@ Webflow.push(function () {
         initContactInfo("yacht");
         break;
       case "event-info":
-        initEventInfo();
+        // initEventInfo();
         break;
       case "meal-plan-info":
         initAthleteInfo();
