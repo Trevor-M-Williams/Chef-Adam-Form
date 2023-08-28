@@ -185,7 +185,12 @@ Webflow.push(function () {
       const diff = eventDate - now;
       const hours = Math.floor(diff / 1000 / 60 / 60);
       if (hours < 48) {
-        showError("For events within 48 hours, please call 954-406-1375");
+        const error = `
+          <div>
+            For events within 48 hours, please <a href="tel:9544061375">call</a>
+          </div>
+        `;
+        showError(error);
         return false;
       }
     }
@@ -1001,9 +1006,9 @@ Webflow.push(function () {
     });
   }
 
-  function showError(msg) {
+  function showError(error) {
     const errorMessage = document.querySelector(".error");
-    errorMessage.textContent = msg;
+    errorMessage.innerHTML = error;
     errorMessage.classList.add("active");
   }
 
