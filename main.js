@@ -523,6 +523,7 @@ Webflow.push(function () {
 
   function initForm() {
     const safariMobile = isSafariMobile();
+    logToModal(safariMobile);
     if (safariMobile) {
       document.body.overflow = "hidden";
     }
@@ -553,7 +554,10 @@ Webflow.push(function () {
     initFormSteps();
     initServiceOptions();
     updateStep(stepIndex);
-    // initDevButtons(); // DEV ONLY!
+
+    // DEV ONLY!
+    // initDevButtons();
+    initLogModal();
 
     const serviceLink = sessionStorage.getItem("serviceLink");
     if (serviceLink) {
@@ -582,6 +586,27 @@ Webflow.push(function () {
         cursor: pointer;
         user-select: none;
       }
+
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      
+      .modal-content {
+        position: absolute;
+        top: 5vh;
+        left: 5vw;
+        background-color: #fff;
+        padding: 0.5rem;
+        height: 90vh;
+        width: 90vw;
+      }
+      
+      .close {
+        cursor: pointer;
+      }
   `;
 
     function isSafariMobile() {
@@ -607,6 +632,40 @@ Webflow.push(function () {
       formSteps.push(stepElement);
       if (step === "service") return;
       formStepWrapper.appendChild(stepElement);
+    });
+  }
+
+  function initLogModal() {
+    const logModal = document.createElement("div");
+    logModal.id = "logModal";
+    logModal.className = "modal";
+
+    const modalContent = document.createElement("div");
+    modalContent.className = "modal-content";
+
+    const closeModalBtn = document.createElement("span");
+    closeModalBtn.className = "close";
+    closeModalBtn.innerHTML = "&times;";
+
+    const logContainer = document.createElement("pre");
+    logContainer.id = "logContainer";
+
+    modalContent.appendChild(closeModalBtn);
+    modalContent.appendChild(logContainer);
+    logModal.appendChild(modalContent);
+    document.body.appendChild(logModal);
+
+    const openLogModalBtn = document.createElement("button");
+    openLogModalBtn.id = "openLogModal";
+    openLogModalBtn.textContent = "Open Log Modal";
+    document.body.appendChild(openLogModalBtn);
+
+    openLogModalBtn.addEventListener("click", () => {
+      logModal.style.display = "block";
+    });
+
+    closeModalBtn.addEventListener("click", () => {
+      logModal.style.display = "none";
     });
   }
 
@@ -902,6 +961,11 @@ Webflow.push(function () {
       option.tabIndex = 0;
       option.addEventListener("click", handleVenueSelect);
     });
+  }
+
+  function logToModal(msg) {
+    const logText = document.createTextNode(msg + "\n");
+    logContainer.appendChild(logText);
   }
 
   function showError(msg) {
