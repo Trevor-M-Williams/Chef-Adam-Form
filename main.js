@@ -496,12 +496,10 @@ Webflow.push(function () {
       inputWrapper.appendChild(label);
 
       const input = document.createElement("input");
-      if (input.type !== "date") input.classList.add("input", "w-input");
       input.type = item.type;
       if (input.type === "date") {
         input.min = new Date().toISOString().split("T")[0];
-        logToModal(input.style.width);
-        logToModal(input.classList);
+        logToModal(input);
       }
       input.name = item.name;
       input.required = true;
@@ -676,9 +674,33 @@ Webflow.push(function () {
       logModal.style.display = "none";
     });
 
-    window.logToModal = function (msg) {
-      const logText = document.createTextNode(msg + "\n");
-      logContainer.appendChild(logText);
+    window.logToModal = function (msgOrElement) {
+      let logText;
+      if (typeof msgOrElement === "string") {
+        logText = document.createTextNode(msgOrElement + "\n");
+      } else if (msgOrElement instanceof HTMLElement) {
+        let styles = window.getComputedStyle(msgOrElement);
+        let attributes = msgOrElement.attributes;
+
+        let styleInfo = "Styles:\n";
+        for (let prop of styles) {
+          styleInfo += `${prop}: ${styles.getPropertyValue(prop)}\n`;
+        }
+
+        let attributeInfo = "Attributes:\n";
+        for (let attr of attributes) {
+          attributeInfo += `${attr.name}=${attr.value}\n`;
+        }
+
+        logText = document.createTextNode(
+          `Element: ${msgOrElement.tagName}\n${styleInfo}\n${attributeInfo}\n`
+        );
+      }
+
+      if (logText) {
+        const logContainer = document.getElementById("logContainer");
+        logContainer.appendChild(logText);
+      }
     };
   }
 
