@@ -604,6 +604,12 @@ Webflow.push(function () {
         width: 90vw;
       }
       
+      #openLogModal {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+      }
+
       .close {
         cursor: pointer;
       }
@@ -667,6 +673,11 @@ Webflow.push(function () {
     closeModalBtn.addEventListener("click", () => {
       logModal.style.display = "none";
     });
+
+    window.logToModal = function (msg) {
+      const logText = document.createTextNode(msg + "\n");
+      logContainer.appendChild(logText);
+    };
   }
 
   function initMealPlanPricing() {
@@ -961,11 +972,6 @@ Webflow.push(function () {
       option.tabIndex = 0;
       option.addEventListener("click", handleVenueSelect);
     });
-  }
-
-  function logToModal(msg) {
-    const logText = document.createTextNode(msg + "\n");
-    logContainer.appendChild(logText);
   }
 
   function showError(msg) {
