@@ -616,10 +616,12 @@ Webflow.push(function () {
   `;
 
     function isSafariMobile() {
-      const chromeAgent = navigator.userAgent.indexOf("Chrome") > -1;
+      const chromeAgent =
+        navigator.userAgent.indexOf("Chrome") > -1 ||
+        navigator.userAgent.indexOf("CriOS") > -1;
       const safariAgent = navigator.userAgent.indexOf("Safari") > -1;
 
-      logToModal(navigator.userAgent);
+      logToModal(chromeAgent);
 
       return safariAgent && !chromeAgent && window.innerWidth < 479;
     }
