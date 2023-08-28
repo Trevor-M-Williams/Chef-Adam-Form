@@ -556,7 +556,7 @@ Webflow.push(function () {
     const safariMobile = isSafariMobile();
     logToModal(safariMobile);
     if (safariMobile) {
-      document.body.overflow = "hidden";
+      document.body.style.overflow = "hidden";
     }
 
     const serviceLink = sessionStorage.getItem("serviceLink");
@@ -605,7 +605,7 @@ Webflow.push(function () {
       }
       
       #openLogModal {
-        position: absolute;
+        position: fixed;
         bottom: 5px;
         left: 5px;
       }
@@ -663,7 +663,7 @@ Webflow.push(function () {
 
     const openLogModalBtn = document.createElement("button");
     openLogModalBtn.id = "openLogModal";
-    openLogModalBtn.textContent = "Open Log Modal";
+    openLogModalBtn.textContent = "Log";
     document.body.appendChild(openLogModalBtn);
 
     openLogModalBtn.addEventListener("click", () => {
