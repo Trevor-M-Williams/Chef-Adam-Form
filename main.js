@@ -498,9 +498,10 @@ Webflow.push(function () {
       const input = document.createElement("input");
       if (input.type !== "date") input.classList.add("input", "w-input");
       input.type = item.type;
-      if (item.type === "date") {
+      if (input.type === "date") {
         input.min = new Date().toISOString().split("T")[0];
-        input.style.width = "100% !important";
+        logToModal(input.style.width);
+        logToModal(input.classList);
       }
       input.name = item.name;
       input.required = true;
@@ -554,7 +555,6 @@ Webflow.push(function () {
     initLogModal();
 
     const safariMobile = isSafariMobile();
-    logToModal(safariMobile);
     if (safariMobile) {
       document.body.style.overflow = "hidden";
     }
@@ -620,8 +620,6 @@ Webflow.push(function () {
         navigator.userAgent.indexOf("Chrome") > -1 ||
         navigator.userAgent.indexOf("CriOS") > -1;
       const safariAgent = navigator.userAgent.indexOf("Safari") > -1;
-
-      logToModal(chromeAgent);
 
       return safariAgent && !chromeAgent && window.innerWidth < 479;
     }
