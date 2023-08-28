@@ -496,6 +496,7 @@ Webflow.push(function () {
       inputWrapper.appendChild(label);
 
       const input = document.createElement("input");
+      input.classList.add("input", "w-input");
       input.type = item.type;
       if (input.type === "date") {
         input.min = new Date().toISOString().split("T")[0];
