@@ -496,14 +496,16 @@ Webflow.push(function () {
       inputWrapper.appendChild(label);
 
       const input = document.createElement("input");
-      input.classList.add("input", "w-input");
+      input.style.marginBottom = "1rem";
+      input.name = item.name;
+      input.required = true;
       input.type = item.type;
       if (input.type === "date") {
         input.min = new Date().toISOString().split("T")[0];
-        logToModal(input);
-      }
-      input.name = item.name;
-      input.required = true;
+        input.classList.add("date-time-input");
+      } else if (input.type === "time") {
+        input.classList.add("date-time-input");
+      } else input.classList.add("input", "w-input");
       inputWrapper.appendChild(input);
 
       if (userInput["event-info"][item.name])
