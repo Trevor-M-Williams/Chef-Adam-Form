@@ -217,6 +217,7 @@ Webflow.push(function () {
     const items = menuState[menuType];
     for (const key in items) {
       const quantity = items[key].quantity;
+      if (!quantity) continue;
       if (quantity === 0) continue;
       const addToCartButton = items[key].addToCartButton;
 
@@ -584,10 +585,10 @@ Webflow.push(function () {
   `;
 
     function isSafariMobile() {
-      return (
-        /AppleWebKit/.test(navigator.userAgent) &&
-        /Mobile/.test(navigator.userAgent)
-      );
+      const chromeAgent = navigator.userAgent.indexOf("Chrome") > -1;
+      const safariAgent = navigator.userAgent.indexOf("Safari") > -1;
+
+      return safariAgent && !chromeAgent && window.innerWidth < 479;
     }
   }
 
