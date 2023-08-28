@@ -596,11 +596,11 @@ Webflow.push(function () {
       
       .modal-content {
         position: absolute;
-        top: 5vh;
+        top: 10vh;
         left: 5vw;
         background-color: #fff;
         padding: 0.5rem;
-        height: 90vh;
+        height: 80vh;
         width: 90vw;
       }
       
