@@ -1,6 +1,6 @@
 Webflow.push(function () {
   window.addEventListener("click", handleStepChange);
-  window.addEventListener("resize", initButtons);
+  window.addEventListener("resize", handleResize);
 
   let userInput = JSON.parse(sessionStorage.getItem("userInput")) || {};
   let menuState = JSON.parse(sessionStorage.getItem("menuState")) || {};
@@ -9,13 +9,17 @@ Webflow.push(function () {
   let stepIndex = 0;
   let formFlow = ["service"];
   let isAnimating = false;
+  let isMobile = false;
   const animationDuration = 400;
   const allSteps = document.querySelectorAll(".form-step");
+  const eventInputWrappers = document.querySelectorAll(
+    "[data-step='event-info'] .input-wrapper"
+  );
 
   let backButton;
   let nextButton;
 
-  initButtons();
+  handleResize();
   initForm();
 
   function handleServiceSelect(e) {
@@ -32,60 +36,27 @@ Webflow.push(function () {
       else option.classList.add("selected");
     });
 
-    const formFlows = {
-      "private-event": [
-        "service",
-        "venue",
-        "contact-info",
-        "event-info",
-        "private-event-menu",
-        "additional-info",
-        "review",
-      ],
-      "luxury-catering": [
-        "service",
-        "venue",
-        "contact-info",
-        "event-info",
-        "luxury-catering-menu",
-        "additional-info",
-        "review",
-      ],
-      "performance-catering": [
-        "service",
-        "contact-info",
-        "event-info",
-        "performance-catering-menu",
-        "additional-info",
-        "review",
-      ],
-      "meal-plan": [
-        "service",
-        "contact-info",
-        "meal-plan-info",
-        "meal-plan-pricing",
-        "review",
-      ],
-    };
-
-    const option = clickedOption.id;
-    userInput["service-info"]["service"] = option;
-    formFlow = formFlows[option];
-    initFormSteps();
+    const service = clickedOption.id;
+    userInput["service-info"]["service"] = service;
+    initFormSteps(service);
     setTimeout(() => {
       updateStep(1);
     }, 25);
 
     hideError();
+
+    sessionStorage.setItem("userInput", JSON.stringify(userInput));
   }
 
-  function initButtons() {
-    if (window.innerWidth > 479) {
-      backButton = document.querySelector("#back-arrow");
-      nextButton = document.querySelector("#next-arrow");
-    } else {
+  function handleResize() {
+    if (window.innerWidth < 479) isMobile = true;
+
+    if (isMobile) {
       backButton = document.querySelector("#back-button");
       nextButton = document.querySelector("#next-button");
+    } else {
+      backButton = document.querySelector("#back-arrow");
+      nextButton = document.querySelector("#next-arrow");
     }
   }
 
@@ -185,12 +156,7 @@ Webflow.push(function () {
       const diff = eventDate - now;
       const hours = Math.floor(diff / 1000 / 60 / 60);
       if (hours < 48) {
-        const error = `
-          <div>
-            For events within 48 hours, please <a href="tel:9544061375">call</a>
-          </div>
-        `;
-        showError(error);
+        showPopup();
         return false;
       }
     }
@@ -299,9 +265,9 @@ Webflow.push(function () {
   function handleSubmit() {
     const form = document.querySelector(".order-form");
     const submitButton = form.querySelector("input[type='submit']");
-    submitButton.click();
+    // submitButton.click();
 
-    // console.log(form);
+    console.log(form);
 
     const formHeader = document.querySelector(".form-card-header");
     const reviewHeader = document.querySelector(".review-header");
@@ -379,6 +345,8 @@ Webflow.push(function () {
     setTimeout(() => {
       updateStep(1);
     }, 25);
+
+    sessionStorage.setItem("userInput", JSON.stringify(userInput));
   }
 
   function hideError() {
@@ -466,55 +434,37 @@ Webflow.push(function () {
   }
 
   function initEventInfo() {
-    const eventInfoStep = document.querySelector("[data-step='event-info']");
-
     let eventInfo;
-    switch (userInput["service-info"]["service"]) {
+    const service = userInput["service-info"]["service"];
+    const venue = userInput["service-info"]["venue"];
+    switch (service) {
       case "private-event":
-        if (userInput["service-info"]["venue"] === "yacht")
-          eventInfo = privateEventInfoYacht;
-        else eventInfo = privateEventInfo;
+        if (venue === "yacht")
+          eventInfo = ["marina-address", "date", "time", "party-size"];
+        else eventInfo = ["address", "date", "time", "party-size"];
         break;
       case "luxury-catering":
-        if (userInput["service-info"]["venue"] === "yacht")
-          eventInfo = luxuryCateringInfoYacht;
-        else eventInfo = luxuryCateringInfo;
+        if (venue === "yacht") eventInfo = ["marina-address", "date", "time"];
+        else eventInfo = ["address", "date", "time"];
         break;
       case "performance-catering":
-        eventInfo = performanceCateringInfo;
+        eventInfo = ["address", "date", "time"];
         break;
       default:
         break;
     }
 
-    eventInfoStep.innerHTML = "";
+    const eventInfoDiv = document.querySelector(".event-info");
+    eventInfoDiv.innerHTML = "";
 
-    eventInfo.forEach((item) => {
-      const inputWrapper = document.createElement("div");
-      inputWrapper.classList.add("input-wrapper");
-      eventInfoStep.appendChild(inputWrapper);
-
-      const label = document.createElement("label");
-      label.classList.add("label");
-      label.textContent = item.label;
-      label.for = item.name;
-      inputWrapper.appendChild(label);
-
-      const input = document.createElement("input");
-      input.style.marginBottom = "1rem";
-      input.name = item.name;
-      input.required = true;
-      input.type = item.type;
-      if (input.type === "date") {
-        input.min = new Date().toISOString().split("T")[0];
-        input.classList.add("date-time-input");
-      } else if (input.type === "time") {
-        input.classList.add("date-time-input");
-      } else input.classList.add("input", "w-input");
-      inputWrapper.appendChild(input);
-
-      if (userInput["event-info"][item.name])
-        input.value = userInput["event-info"][item.name];
+    eventInputWrappers.forEach((wrapper) => {
+      const input = wrapper.querySelector("input, textarea");
+      if (eventInfo.includes(input.name)) {
+        eventInfoDiv.appendChild(wrapper);
+        if (userInput["event-info"][input.name]) {
+          input.value = userInput["event-info"][input.name];
+        }
+      }
     });
   }
 
@@ -533,9 +483,6 @@ Webflow.push(function () {
     if (!userInput["contact-info"]) userInput["contact-info"] = {};
     if (!userInput["event-info"]) userInput["event-info"] = {};
     if (!userInput["service-info"]) userInput["service-info"] = {};
-    userInput["service-info"]["service"] = "";
-    userInput["service-info"]["venue"] = "";
-    userInput["service-info"]["meal-plan"] = "";
 
     if (!menuState["luxury-catering-menu"])
       menuState["luxury-catering-menu"] = {};
@@ -557,40 +504,37 @@ Webflow.push(function () {
     updateStep(stepIndex);
 
     // DEV ONLY!
-    // initDevButtons();
-    initLogModal();
+    initDevButtons();
+    // initLogModal();
 
     const safariMobile = isSafariMobile();
     if (safariMobile) {
       document.body.style.overflow = "hidden";
     }
 
+    // initialize user service selection
     const serviceLink = sessionStorage.getItem("serviceLink");
     if (serviceLink) {
       const serviceOption = document.querySelector(`#${serviceLink}`);
-      setTimeout(() => {
-        serviceOption.click();
-      }, 250);
+      serviceOption.classList.add("selected");
+      userInput["service-info"]["service"] = serviceLink;
+      sessionStorage.removeItem("serviceLink");
+    } else if (userInput["service-info"]["service"]) {
+      const service = userInput["service-info"]["service"];
+      const serviceOption = document.querySelector(`#${service}`);
+      serviceOption.classList.add("selected");
+      initFormSteps(service);
     }
-
-    const mealPlanLink = sessionStorage.getItem("mealPlanLink");
-    if (mealPlanLink) userInput["service-info"]["meal-plan"] = mealPlanLink;
-    else userInput["service-info"]["meal-plan"] = "";
 
     const styleElement = document.createElement("style");
     document.head.appendChild(styleElement);
-    styleElement.innerHTML = `     
-      .form-step {
-        transition: transform ${animationDuration}ms ease-in-out;
-      }
-
+    styleElement.innerHTML = `
       .w-webflow-badge {
         display: none !important;
       }
-
-      .meal-plan-pricing-option {
-        cursor: pointer;
-        user-select: none;
+          
+      .form-step {
+        transition: transform ${animationDuration}ms ease-in-out;
       }
 
       .modal {
@@ -610,7 +554,7 @@ Webflow.push(function () {
         width: 90vw;
       }
       
-      #openLogModal {
+      #open-log-modal {
         position: fixed;
         bottom: 5px;
         left: 5px;
@@ -627,11 +571,47 @@ Webflow.push(function () {
         navigator.userAgent.indexOf("CriOS") > -1;
       const safariAgent = navigator.userAgent.indexOf("Safari") > -1;
 
-      return safariAgent && !chromeAgent && window.innerWidth < 479;
+      return safariAgent && !chromeAgent && window.innerWidth < 991;
     }
   }
 
-  function initFormSteps() {
+  function initFormSteps(service) {
+    const formFlows = {
+      "private-event": [
+        "service",
+        "venue",
+        "contact-info",
+        "event-info",
+        "private-event-menu",
+        "additional-info",
+        "review",
+      ],
+      "luxury-catering": [
+        "service",
+        "venue",
+        "contact-info",
+        "event-info",
+        "luxury-catering-menu",
+        "additional-info",
+        "review",
+      ],
+      "performance-catering": [
+        "service",
+        "contact-info",
+        "event-info",
+        "performance-catering-menu",
+        "additional-info",
+        "review",
+      ],
+      "meal-plan": [
+        "service",
+        "contact-info",
+        "meal-plan-info",
+        "meal-plan-pricing",
+        "review",
+      ],
+    };
+    if (service) formFlow = formFlows[service];
     formSteps = [];
 
     const formStepWrapper = document.querySelector(".form-step-wrapper");
@@ -670,7 +650,7 @@ Webflow.push(function () {
     document.body.appendChild(logModal);
 
     const openLogModalBtn = document.createElement("button");
-    openLogModalBtn.id = "openLogModal";
+    openLogModalBtn.id = "open-log-modal";
     openLogModalBtn.textContent = "Log";
     document.body.appendChild(openLogModalBtn);
 
@@ -713,7 +693,7 @@ Webflow.push(function () {
   }
 
   function initMealPlanPricing() {
-    const mealPlanLinks = [
+    const mealPlanUrls = [
       "https://buy.stripe.com/3csdRNegV3YogAU00u",
       "https://buy.stripe.com/3cs6pl4Gl1Qg0BW00t",
       "https://buy.stripe.com/5kAcNJ3Ch9iI3O86oQ",
@@ -725,8 +705,22 @@ Webflow.push(function () {
     const mealPlanOptions = pricingStep.querySelectorAll(".form-option");
 
     mealPlanOptions.forEach((option, i) => {
+      option.id = `meals-${(i + 1) * 5}`;
       option.addEventListener("click", (e) => handlePlanSelect(e, i));
     });
+
+    // initialize user meal plan selection
+    const mealPlanLink = sessionStorage.getItem("mealPlanLink");
+    if (mealPlanLink) {
+      const mealPlanOption = document.querySelector(`#${mealPlanLink}`);
+      mealPlanOption.classList.add("selected");
+      userInput["service-info"]["meal-plan"] = mealPlanLink;
+      sessionStorage.removeItem("mealPlanLink");
+    } else if (userInput["service-info"]["meal-plan"]) {
+      const mealPlan = userInput["service-info"]["meal-plan"];
+      const mealPlanOption = document.querySelector(`#meals-${mealPlan}`);
+      mealPlanOption.classList.add("selected");
+    }
 
     function handlePlanSelect(e, i) {
       const clickedOption = e.target.closest(".form-option");
@@ -739,11 +733,14 @@ Webflow.push(function () {
         else option.classList.add("selected");
       });
 
-      const mealPlan =
-        clickedOption.querySelector(".meal-plan-text").textContent;
-      const mealPlanLink = mealPlanLinks[i];
+      const mealPlan = clickedOption
+        .querySelector(".meal-plan-text")
+        .textContent.toLowerCase()
+        .replace("meals", "")
+        .trim();
+      const mealPlanUrl = mealPlanUrls[i];
       userInput["service-info"]["meal-plan"] = mealPlan;
-      userInput["checkout-link"] = mealPlanLink;
+      userInput["checkout-link"] = mealPlanUrl;
 
       updateStep(1);
 
@@ -768,8 +765,15 @@ Webflow.push(function () {
 
     menuItems.forEach((item, i) => {
       const name = item.querySelector(".menu-item-name").textContent;
+      let price = item.querySelector(".menu-item-price").textContent;
+      price = price
+        .replace("$", "")
+        .replace(".00", "")
+        .replace("USD", "")
+        .trim();
       const input = quantityInputs[i];
       menuState[menuType][name] = {
+        price,
         quantity: menuState[menuType][name]?.quantity || 0,
         input,
         addToCartButton: addToCartButtons[i],
@@ -777,6 +781,7 @@ Webflow.push(function () {
     });
 
     for (let dish in menuState[menuType]) {
+      if (dish === "total") continue;
       menuState[menuType][dish].input.addEventListener("change", (e) =>
         updateMenuState(e, menuType)
       );
@@ -832,28 +837,27 @@ Webflow.push(function () {
 
   function initReview() {
     const reviewInfo = document.querySelector(".review-info");
+    const serviceHeader = document.querySelector(".review-header");
+    serviceHeader.onclick = () => handleSectionClick("service");
     const serviceElement = document.querySelector(
       ".review-header .review-item-value"
     );
-    serviceElement.textContent = userInput["service-info"][
-      "service"
-    ].replaceAll("-", " ");
+    const service = userInput["service-info"]["service"];
+    serviceElement.textContent = service.replaceAll("-", " ");
+    serviceElement.classList.add("capitalize");
 
     reviewInfo.innerHTML = "";
 
     initContactSection();
 
-    if (userInput["service-info"]["service"] === "meal-plan") {
-      initAthleteSection();
-    } else initEventSection();
+    if (service === "meal-plan") initAthleteSection();
+    else initEventSection();
 
-    if (userInput["service-info"]["service"] === "luxury-catering") {
-      initMenuSection();
-    }
+    if (service === "luxury-catering") initMenuSection();
 
     if (userInput["additional-info"]) initAdditionalSection();
 
-    addSubmitButton();
+    if (!isMobile) addSubmitButton();
 
     function addSubmitButton() {
       const submitButton = document.createElement("input");
@@ -864,23 +868,33 @@ Webflow.push(function () {
     }
 
     function initAdditionalSection() {
+      const additionalSection = document.createElement("div");
+      additionalSection.classList.add("review-section");
+      additionalSection.onclick = () => handleSectionClick("additional-info");
+      reviewInfo.appendChild(additionalSection);
+
       const additionalTitle = document.createElement("div");
       additionalTitle.classList.add("label");
       additionalTitle.textContent = "Additional Info:";
-      reviewInfo.appendChild(additionalTitle);
+      additionalSection.appendChild(additionalTitle);
 
       const additionalInfo = userInput["additional-info"];
       const reviewItem = document.createElement("div");
       reviewItem.classList.add("review-item");
       reviewItem.textContent = additionalInfo;
-      reviewInfo.appendChild(reviewItem);
+      additionalSection.appendChild(reviewItem);
     }
 
     function initAthleteSection() {
+      const athleteSection = document.createElement("div");
+      athleteSection.classList.add("review-section");
+      athleteSection.onclick = () => handleSectionClick("meal-plan-info");
+      reviewInfo.appendChild(athleteSection);
+
       const athleteTitle = document.createElement("div");
       athleteTitle.classList.add("label");
       athleteTitle.textContent = "Athlete Info:";
-      reviewInfo.appendChild(athleteTitle);
+      athleteSection.appendChild(athleteTitle);
 
       const athleteInfo = userInput["meal-plan-info"];
       for (let item in athleteInfo) {
@@ -894,15 +908,20 @@ Webflow.push(function () {
             <div class="review-item-name">${label}:</div>
             <div class="review-item-value capitalize">${value}</div>
         `;
-        reviewInfo.appendChild(reviewItem);
+        athleteSection.appendChild(reviewItem);
       }
     }
 
     function initContactSection() {
+      const contactSection = document.createElement("div");
+      contactSection.classList.add("review-section");
+      contactSection.onclick = () => handleSectionClick("contact-info");
+      reviewInfo.appendChild(contactSection);
+
       const contactTitle = document.createElement("div");
       contactTitle.classList.add("label");
       contactTitle.textContent = "Contact Info:";
-      reviewInfo.appendChild(contactTitle);
+      contactSection.appendChild(contactTitle);
 
       let contactInfo = userInput["contact-info"];
       if (userInput["service-info"]["venue"] === "yacht") {
@@ -921,15 +940,20 @@ Webflow.push(function () {
             <div class="review-item-name">${label}:</div>
             <div class="review-item-value">${value}</div> 
         `;
-        reviewInfo.appendChild(reviewItem);
+        contactSection.appendChild(reviewItem);
       }
     }
 
     function initEventSection() {
+      const eventSection = document.createElement("div");
+      eventSection.classList.add("review-section");
+      eventSection.onclick = () => handleSectionClick("event-info");
+      reviewInfo.appendChild(eventSection);
+
       const eventTitle = document.createElement("div");
       eventTitle.classList.add("label");
       eventTitle.textContent = "Event:";
-      reviewInfo.appendChild(eventTitle);
+      eventSection.appendChild(eventTitle);
 
       const eventInfo = userInput["event-info"];
       for (let item in eventInfo) {
@@ -947,27 +971,56 @@ Webflow.push(function () {
           <div class="review-item-name">${label}:</div>
           <div class="review-item-value capitalize">${value}</div>
       `;
-        reviewInfo.appendChild(reviewItem);
+        eventSection.appendChild(reviewItem);
       }
     }
 
     function initMenuSection() {
+      const menuSection = document.createElement("div");
+      menuSection.classList.add("review-section");
+      menuSection.onclick = () => handleSectionClick("luxury-catering-menu");
+      reviewInfo.appendChild(menuSection);
+
       const foodTitle = document.createElement("div");
       foodTitle.classList.add("label");
       foodTitle.textContent = "Food:";
-      reviewInfo.appendChild(foodTitle);
+      menuSection.appendChild(foodTitle);
 
       for (let item in menuState["luxury-catering-menu"]) {
+        if (item === "total") continue;
         const quantity = menuState["luxury-catering-menu"][item].quantity;
         if (quantity === 0) continue;
         const reviewItem = document.createElement("div");
         reviewItem.classList.add("review-item");
         reviewItem.innerHTML = `
-          <div class="review-item-name">${item}</div>
-          <div class="review-item-value">${quantity}</div>
+          <div class="review-flex">
+            <div class="menu-item-value">${quantity}</div>
+            <div class="review-item-name">${item}</div>
+          </div>
+          <div class="dotted-line"></div>
+          <div class="review-item-price">$${menuState["luxury-catering-menu"][item].price}</div>
       `;
-        reviewInfo.appendChild(reviewItem);
+        menuSection.appendChild(reviewItem);
       }
+
+      const total = document.createElement("div");
+      total.classList.add("review-item", "total");
+      total.innerHTML = `
+        <div class="label total">Total:</div>
+        <div class="dotted-line"></div>
+        <div class="review-item-price total">$${menuState["luxury-catering-menu"].total}</div>
+      `;
+      menuSection.appendChild(total);
+    }
+
+    function handleSectionClick(section) {
+      const additionalInfoStep = formSteps.find(
+        (step) => step.dataset.step === section
+      );
+
+      const newStepIndex = formSteps.indexOf(additionalInfoStep);
+      const incrementor = newStepIndex - stepIndex;
+      updateStep(incrementor);
     }
 
     function formatDate(date) {
@@ -1004,12 +1057,29 @@ Webflow.push(function () {
       option.tabIndex = 0;
       option.addEventListener("click", handleVenueSelect);
     });
+
+    // initialize user venue selection
+    const venue = userInput["service-info"]["venue"] || null;
+    if (!venue) return;
+    const venueOption = document.querySelector(`#${venue}`);
+    venueOption.classList.add("selected");
+    if (venue === "yacht") {
+      formFlow = formFlow.map((step) => {
+        if (step === "contact-info") return "yacht-contact-info";
+        return step;
+      });
+    }
   }
 
   function showError(error) {
     const errorMessage = document.querySelector(".error");
     errorMessage.innerHTML = error;
     errorMessage.classList.add("active");
+  }
+
+  function showPopup() {
+    const popup = document.querySelector(".form-popup");
+    popup.style.display = "flex";
   }
 
   function updateButtons() {
@@ -1031,12 +1101,20 @@ Webflow.push(function () {
       backButton.style.pointerEvents = "auto";
     }
 
-    if (formFlow[stepIndex] === "review") {
-      nextButton.style.opacity = 0;
-      nextButton.style.pointerEvents = "none";
+    if (isMobile) {
+      if (formFlow[stepIndex] === "review") {
+        nextButton.textContent = "Submit";
+      } else {
+        nextButton.textContent = "Next";
+      }
     } else {
-      nextButton.style.opacity = 1;
-      nextButton.style.pointerEvents = "auto";
+      if (formFlow[stepIndex] === "review") {
+        nextButton.style.opacity = 0;
+        nextButton.style.pointerEvents = "none";
+      } else {
+        nextButton.style.opacity = 1;
+        nextButton.style.pointerEvents = "auto";
+      }
     }
   }
 
@@ -1051,9 +1129,9 @@ Webflow.push(function () {
       ["luxury-catering-menu"]: "Luxury Catering Menu",
       ["performance-catering-menu"]: "Performance Catering Menu",
       ["private-event-menu"]: "Menu",
-      ["contact-info"]: "Contact information",
+      ["contact-info"]: "Contact Information",
       ["yacht-contact-info"]: "Contact Information",
-      ["event-info"]: "Event information",
+      ["event-info"]: "Event Information",
       ["meal-plan-info"]: "Athlete Information",
       ["meal-plan-pricing"]: "Meal Plan Options",
       ["additional-info"]: "Additional information",
@@ -1074,21 +1152,43 @@ Webflow.push(function () {
       ["meal-plan-info"]: "Enter your athlete's information.",
       ["meal-plan-pricing"]: "Select your meal plan.",
       ["additional-info"]: "Enter any additional information.",
-      review: "Review your order and submit when ready.",
+      review: "Click/Tap a section to make changes.",
     };
     formSubtitle.textContent = subtitles[step];
   }
 
   function updateMenuState(e, menuType) {
     const quantity = parseInt(e.target.value);
-    const name = e.target
-      .closest(".menu-item")
-      .querySelector(".menu-item-name").textContent;
+    const menuItem = e.target.closest(".menu-item");
+    const name = menuItem.querySelector(".menu-item-name").textContent;
+
+    if (quantity === NaN) {
+      e.target.value = 0;
+      return;
+    }
 
     menuState[menuType][name].quantity = quantity;
+
+    const total = calculateTotal(menuType);
+    menuState[menuType].total = total;
     sessionStorage.setItem("menuState", JSON.stringify(menuState));
 
     hideError();
+
+    function calculateTotal() {
+      let total = 0;
+      for (let item in menuState[menuType]) {
+        if (item === "total") continue;
+
+        const quantity = menuState[menuType][item].quantity;
+        if (quantity === 0) continue;
+
+        const price = parseFloat(menuState[menuType][item].price);
+        total += quantity * price;
+      }
+
+      return total;
+    }
   }
 
   function updateProgressBar() {
@@ -1142,12 +1242,6 @@ Webflow.push(function () {
       case "luxury-catering-menu":
         initMenu("luxury-catering-menu");
         break;
-      case "private-event-menu":
-        initMenu("private-event-menu");
-        break;
-      case "performance-catering-menu":
-        initMenu("performance-catering-menu");
-        break;
       case "contact-info":
         initContactInfo();
         break;
@@ -1167,104 +1261,4 @@ Webflow.push(function () {
         break;
     }
   }
-
-  const privateEventInfo = [
-    {
-      name: "address",
-      label: "Address",
-      type: "text",
-    },
-    {
-      name: "date",
-      label: "Event Date",
-      type: "date",
-    },
-    {
-      name: "time",
-      label: "Estimated Start Time",
-      type: "time",
-    },
-    {
-      name: "party-size",
-      label: "Estimated Party Size",
-      type: "number",
-    },
-  ];
-
-  const privateEventInfoYacht = [
-    {
-      name: "marina-address",
-      label: "Marina Address",
-      type: "text",
-    },
-    {
-      name: "date",
-      label: "Event Date",
-      type: "date",
-    },
-    {
-      name: "time",
-      label: "Estimated Departure Time",
-      type: "time",
-    },
-    {
-      name: "party-size",
-      label: "Estimated Party Size",
-      type: "number",
-    },
-  ];
-
-  const luxuryCateringInfo = [
-    {
-      name: "date",
-      label: "Event Date",
-      type: "date",
-    },
-    {
-      name: "time",
-      label: "Estimated Start Time",
-      type: "time",
-    },
-    {
-      name: "address",
-      label: "Address",
-      type: "text",
-    },
-  ];
-
-  const luxuryCateringInfoYacht = [
-    {
-      name: "marina-address",
-      label: "Marina Address",
-      type: "text",
-    },
-    {
-      name: "date",
-      label: "Event Date",
-      type: "date",
-    },
-    {
-      name: "time",
-      label: "Estimated Departure Time",
-      type: "time",
-    },
-  ];
-
-  const performanceCateringInfo = [
-    {
-      name: "address",
-      label: "Address",
-      type: "text",
-    },
-    {
-      name: "date",
-      label: "Event Date",
-      type: "date",
-    },
-    {
-      name: "time",
-      label: "Estimated Start Time",
-      type: "time",
-    },
-  ];
 });
