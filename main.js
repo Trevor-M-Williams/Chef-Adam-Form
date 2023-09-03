@@ -1,4 +1,6 @@
 Webflow.push(function () {
+  const dev = 0;
+
   window.addEventListener("click", handleStepChange);
   window.addEventListener("resize", handleResize);
 
@@ -8,10 +10,15 @@ Webflow.push(function () {
   let formSteps = [];
   let stepIndex = 0;
   let formFlow = ["service"];
-  let isAnimating = false;
+
   let isMobile = false;
+  let isAnimating = false;
   const animationDuration = 400;
+
   const allSteps = document.querySelectorAll(".form-step");
+  const contactInputWrappers = document.querySelectorAll(
+    "[data-step='contact-info'] .input-wrapper"
+  );
   const eventInputWrappers = document.querySelectorAll(
     "[data-step='event-info'] .input-wrapper"
   );
@@ -22,97 +29,111 @@ Webflow.push(function () {
   handleResize();
   initForm();
 
-  function handleServiceSelect(e) {
-    if (isAnimating) return;
+  function addLoader() {
+    const loader = document.createElement("div");
+    loader.className = "loader";
 
-    const clickedOption = e.target.closest(".form-option");
-    if (!clickedOption) return;
+    const loaderIcon = document.createElement("div");
+    loaderIcon.className = "loader-icon";
 
-    const serviceOptions = document.querySelectorAll(
-      ".service-options .form-option"
-    );
-    serviceOptions.forEach((option) => {
-      if (option !== clickedOption) option.classList.remove("selected");
-      else option.classList.add("selected");
+    loader.appendChild(loaderIcon);
+    document.body.appendChild(loader);
+  }
+
+  function calculateTotal(menuType) {
+    let total = 0;
+    for (let item in menuState[menuType]) {
+      if (item === "total") continue;
+
+      const quantity = menuState[menuType][item].quantity;
+      if (quantity === 0) continue;
+
+      const price = parseFloat(menuState[menuType][item].price);
+      total += quantity * price;
+    }
+    return total;
+  }
+
+  function handleFormResponse(type) {
+    updateProgressBar(type);
+    removeButtons();
+    removeLoader();
+    removeProgressBar();
+    initFormMessage(type);
+
+    const email = userInput["contact-info"]["email"];
+    userInput["contact-info"]["email"] = email;
+
+    sessionStorage.clear();
+    sessionStorage.setItem("email", email);
+  }
+
+  function handleFormSubmission() {
+    const form = document.querySelector(".order-form");
+    const submitButton = form.querySelector("input[type='submit']");
+    submitButton.click();
+
+    hideReviewItems();
+    removeButtons();
+    addLoader();
+    updateProgressBar("submit");
+
+    const successElement = document.querySelector(".order-form-success");
+    const errorElement = document.querySelector(".order-form-error");
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "style"
+        ) {
+          const displayStyle = window
+            .getComputedStyle(mutation.target)
+            .getPropertyValue("display");
+
+          if (mutation.target === successElement && displayStyle === "block") {
+            handleFormResponse("success");
+            observer.disconnect();
+          }
+
+          if (mutation.target === errorElement && displayStyle === "block") {
+            handleFormResponse("error");
+            observer.disconnect();
+          }
+        }
+      });
     });
 
-    const service = clickedOption.id;
-    userInput["service-info"]["service"] = service;
-    initFormSteps(service);
-    setTimeout(() => {
-      updateStep(1);
-    }, 25);
+    const config = {
+      attributes: true,
+      attributeFilter: ["style"],
+    };
 
-    hideError();
-
-    sessionStorage.setItem("userInput", JSON.stringify(userInput));
+    if (successElement) observer.observe(successElement, config);
+    if (errorElement) observer.observe(errorElement, config);
   }
 
-  function handleResize() {
-    if (window.innerWidth < 479) isMobile = true;
-
-    if (isMobile) {
-      backButton = document.querySelector("#back-button");
-      nextButton = document.querySelector("#next-button");
-    } else {
-      backButton = document.querySelector("#back-arrow");
-      nextButton = document.querySelector("#next-arrow");
+  function handleFormSubmissionDev() {
+    const form = document.querySelector(".order-form");
+    const formData = new FormData(form);
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
     }
-  }
 
-  function handleFormError() {
-    let errorBlock = document.querySelector(".order-form-error");
-    errorBlock.style.opacity = 1;
+    hideReviewItems();
+    removeButtons();
+    addLoader();
+    updateProgressBar("submit");
+    simulateResponse("success");
+    // simulateResponse("error");
 
-    const formProgress = document.querySelector(".form-progress");
-    const formButtons = document.querySelector(".form-button-group");
-    formProgress.style.display = "none";
-    formButtons.style.display = "none";
-  }
-
-  function handleFormSuccess() {
-    const progressBar = document.querySelector(".form-progress-bar");
-    progressBar.style.width = `100%`;
-
-    const formButtons = document.querySelector(".form-button-group");
-    formButtons.style.display = "none";
-
-    let successBlock = document.querySelector(".order-form-success");
-    let successMessage = document.querySelector(".order-form-message");
-    let successButton = document.querySelector("#success-button");
-
-    switch (userInput["service-info"]["service"]) {
-      case "private-event":
-        console.log("Adam will be in touch");
-        successBlock.style.opacity = 1;
-        successMessage.textContent =
-          "Thank you for your order! Adam will be in touch shortly to help craft your event menu.";
-        successBlock.appendChild(homeButton);
-        break;
-      case "luxury-catering":
-        setTimeout(() => {
-          window.location.href = "/checkout";
-        }, 750);
-        break;
-      case "performance-catering":
-        setTimeout(() => {
-          window.location.href = "/checkout";
-        }, 750);
-        break;
-      case "meal-plan":
-        console.log("Push to stripe page");
-        successBlock.style.opacity = 1;
-        successMessage.textContent =
-          "Your order has been received! Please proceed to checkout.";
-        successButton.textContent = "Checkout";
-        successButton.onclick = () => {
-          const checkoutLink = userInput["checkout-link"] || "/checkout";
-          const win = window.open(checkoutLink, "_blank");
-          win.focus();
-        };
-        break;
-      default:
-        break;
+    function simulateResponse(type) {
+      setTimeout(() => {
+        updateProgressBar(type);
+        removeLoader();
+        removeProgressBar();
+        initFormMessage(type);
+      }, 1500);
     }
   }
 
@@ -156,7 +177,7 @@ Webflow.push(function () {
       const diff = eventDate - now;
       const hours = Math.floor(diff / 1000 / 60 / 60);
       if (hours < 48) {
-        showPopup();
+        showPopup("date");
         return false;
       }
     }
@@ -168,12 +189,22 @@ Webflow.push(function () {
   function handleMenuStep(menuType) {
     let itemSelected = false;
     for (const key in menuState[menuType]) {
+      if (key === "Service Fee") continue;
       if (menuState[menuType][key].quantity > 0) {
         itemSelected = true;
         break;
       }
     }
 
+    // check if order is above $500 minimum
+    const serviceFee = 199;
+    const foodTotal = calculateTotal(menuType) - serviceFee;
+    if (foodTotal < 500) {
+      showError("$500 food minimum");
+      return false;
+    }
+
+    // check if at least one item is selected
     if (!itemSelected) {
       showError("Please select at least one item");
       return false;
@@ -199,6 +230,48 @@ Webflow.push(function () {
     }
 
     return true;
+  }
+
+  function handleResize() {
+    if (window.innerWidth < 479) isMobile = true;
+
+    if (isMobile) {
+      backButton = document.querySelector("#back-button");
+      nextButton = document.querySelector("#next-button");
+    } else {
+      backButton = document.querySelector("#back-arrow");
+      nextButton = document.querySelector("#next-arrow");
+    }
+  }
+
+  function handleServiceSelect(e) {
+    if (isAnimating) return;
+
+    const clickedOption = e.target.closest(".form-option");
+    if (!clickedOption) return;
+
+    const serviceOptions = document.querySelectorAll(
+      ".service-options .form-option"
+    );
+    serviceOptions.forEach((option) => {
+      if (option !== clickedOption) option.classList.remove("selected");
+      else option.classList.add("selected");
+    });
+
+    const service = clickedOption.id;
+    userInput["service-info"]["service"] = service;
+
+    if (service !== "meal-plan") userInput["service-info"]["meal-plan"] = "";
+    if (service === "performance-catering" || service === "meal-plan") {
+      userInput["service-info"]["venue"] = "";
+    }
+
+    initFormSteps();
+    updateStep(1);
+
+    hideError();
+
+    sessionStorage.setItem("userInput", JSON.stringify(userInput));
   }
 
   function handleStepChange(e) {
@@ -252,7 +325,8 @@ Webflow.push(function () {
         sessionStorage.setItem("userInput", JSON.stringify(userInput));
         break;
       case "review":
-        handleSubmit();
+        if (dev) handleFormSubmissionDev();
+        else handleFormSubmission();
         return;
       default:
         if (!handleInputs(step)) return;
@@ -260,55 +334,6 @@ Webflow.push(function () {
     }
 
     updateStep(incrementor);
-  }
-
-  function handleSubmit() {
-    const form = document.querySelector(".order-form");
-    const submitButton = form.querySelector("input[type='submit']");
-    // submitButton.click();
-
-    console.log(form);
-
-    const formHeader = document.querySelector(".form-card-header");
-    const reviewHeader = document.querySelector(".review-header");
-    const reviewInfo = document.querySelector(".review-info");
-    formHeader.style.display = "none";
-    reviewHeader.style.display = "none";
-    reviewInfo.style.display = "none";
-
-    const successElement = document.querySelector(".order-form-success");
-    const errorElement = document.querySelector(".order-form-error");
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.type === "attributes" &&
-          mutation.attributeName === "style"
-        ) {
-          const displayStyle = window
-            .getComputedStyle(mutation.target)
-            .getPropertyValue("display");
-
-          if (mutation.target === successElement && displayStyle === "block") {
-            handleFormSuccess();
-            observer.disconnect();
-          }
-
-          if (mutation.target === errorElement && displayStyle === "block") {
-            handleFormError();
-            observer.disconnect();
-          }
-        }
-      });
-    });
-
-    const config = {
-      attributes: true,
-      attributeFilter: ["style"],
-    };
-
-    if (successElement) observer.observe(successElement, config);
-    if (errorElement) observer.observe(errorElement, config);
   }
 
   function handleVenueSelect(e) {
@@ -328,23 +353,8 @@ Webflow.push(function () {
     let venue = clickedOption.id;
     userInput["service-info"]["venue"] = venue;
 
-    if (venue === "yacht") {
-      formFlow = formFlow.map((step) => {
-        if (step === "contact-info") return "yacht-contact-info";
-        return step;
-      });
-    } else {
-      formFlow = formFlow.map((step) => {
-        if (step === "yacht-contact-info") return "contact-info";
-        return step;
-      });
-    }
-
-    initFormSteps();
     hideError();
-    setTimeout(() => {
-      updateStep(1);
-    }, 25);
+    updateStep(1);
 
     sessionStorage.setItem("userInput", JSON.stringify(userInput));
   }
@@ -354,53 +364,18 @@ Webflow.push(function () {
     errorMessage.classList.remove("active");
   }
 
-  function initDevButtons() {
-    const devButtons = document.createElement("div");
-    devButtons.style.display = "flex";
-    devButtons.style.gap = "5px";
-    devButtons.style.position = "absolute";
-    devButtons.style.bottom = "5px";
-    devButtons.style.left = "5px";
-    document.body.appendChild(devButtons);
-
-    addDevButton("Refresh", refreshWindow);
-    addDevButton("State", printState);
-    addDevButton("Checkout", goToCheckout);
-
-    function addDevButton(text, callback) {
-      const button = document.createElement("button");
-      button.textContent = text;
-      button.addEventListener("click", callback);
-      devButtons.appendChild(button);
-    }
-
-    function refreshWindow() {
-      sessionStorage.clear();
-      window.location.reload();
-    }
-
-    function printState() {
-      console.log(userInput);
-      console.log(menuState);
-
-      let itemSelected = false;
-      for (let item in menuState) {
-        if (menuState[item].quantity > 0) {
-          console.log(item, menuState[item].quantity);
-          itemSelected = true;
-        }
-      }
-      if (!itemSelected) console.log("No items selected");
-    }
-
-    function goToCheckout() {
-      const checkoutLink = userInput["checkout-link"] || "/checkout";
-      const win = window.open(checkoutLink, "_blank");
-      win.focus();
-    }
+  function hideReviewItems() {
+    const formHeader = document.querySelector(".form-header");
+    const formCardHeader = document.querySelector(".form-card-header");
+    const reviewHeader = document.querySelector(".review-header");
+    const reviewInfo = document.querySelector(".review-info");
+    formHeader.style.opacity = "0";
+    formCardHeader.style.display = "none";
+    reviewHeader.style.display = "none";
+    reviewInfo.style.display = "none";
   }
 
-  function initAthleteInfo() {
+  function initMealPlanInfo() {
     const athleteInfoStep = document.querySelector(
       "[data-step='meal-plan-info']"
     );
@@ -418,19 +393,88 @@ Webflow.push(function () {
     });
   }
 
-  function initContactInfo(type) {
-    let contactInfoStep = document.querySelector("[data-step='contact-info']");
-    if (type === "yacht") {
-      contactInfoStep = document.querySelector(
-        "[data-step='yacht-contact-info']"
-      );
-    }
-    const inputs = contactInfoStep.querySelectorAll("input, textarea");
+  function initContactInfo() {
+    const contactInfoStep = document.querySelector(
+      "[data-step='contact-info']"
+    );
+    contactInfoStep.innerHTML = "";
 
-    inputs.forEach((input) => {
-      if (userInput["contact-info"][input.name])
-        input.value = userInput["contact-info"][input.name];
+    const venue = userInput["service-info"]["venue"];
+    let contactInputs;
+
+    switch (venue) {
+      case "home":
+        contactInputs = ["name", "phone", "email"];
+        break;
+      case "yacht":
+        contactInputs = ["poc-name", "poc-phone", "email"];
+        break;
+      default:
+        contactInputs = ["name", "phone", "email"];
+        break;
+    }
+
+    contactInputWrappers.forEach((wrapper) => {
+      const input = wrapper.querySelector("input, textarea");
+      if (contactInputs.includes(input.name)) {
+        contactInfoStep.appendChild(wrapper);
+        if (userInput["contact-info"][input.name]) {
+          input.value = userInput["contact-info"][input.name];
+        }
+      }
     });
+  }
+
+  function initDevButtons() {
+    const devButtons = document.createElement("div");
+    devButtons.style.display = "flex";
+    devButtons.style.gap = "5px";
+    devButtons.style.position = "absolute";
+    devButtons.style.bottom = "5px";
+    devButtons.style.left = "5px";
+    document.body.appendChild(devButtons);
+
+    addDevButton("Refresh", refreshWindow);
+    addDevButton("State", printState);
+    addDevButton("Checkout", goToCheckout);
+    addDevButton("Skip", skipToReview);
+
+    function addDevButton(text, callback) {
+      const button = document.createElement("button");
+      button.textContent = text;
+      button.addEventListener("click", callback);
+      devButtons.appendChild(button);
+    }
+
+    function goToCheckout() {
+      const checkoutLink = userInput["checkout-link"] || "/checkout";
+      const win = window.open(checkoutLink, "_blank");
+      win.focus();
+    }
+
+    function printState() {
+      console.log(userInput);
+      console.log(menuState);
+
+      let itemSelected = false;
+      for (let item in menuState["luxury-catering-menu"]) {
+        if (menuState["luxury-catering-menu"][item].quantity > 0) {
+          console.log(item, menuState["luxury-catering-menu"][item].quantity);
+          itemSelected = true;
+        }
+      }
+      if (!itemSelected) console.log("No items selected");
+    }
+
+    function refreshWindow() {
+      sessionStorage.clear();
+      window.location.reload();
+    }
+
+    function skipToReview() {
+      const incrementor = formSteps.length - 1 - stepIndex;
+      updateStep(incrementor);
+    }
   }
 
   function initEventInfo() {
@@ -440,11 +484,18 @@ Webflow.push(function () {
     switch (service) {
       case "private-event":
         if (venue === "yacht")
-          eventInfo = ["marina-address", "date", "time", "party-size"];
+          eventInfo = [
+            "marina-address",
+            "boat-name",
+            "date",
+            "time",
+            "party-size",
+          ];
         else eventInfo = ["address", "date", "time", "party-size"];
         break;
       case "luxury-catering":
-        if (venue === "yacht") eventInfo = ["marina-address", "date", "time"];
+        if (venue === "yacht")
+          eventInfo = ["marina-address", "boat-name", "date", "time"];
         else eventInfo = ["address", "date", "time"];
         break;
       case "performance-catering":
@@ -464,17 +515,16 @@ Webflow.push(function () {
         if (userInput["event-info"][input.name]) {
           input.value = userInput["event-info"][input.name];
         }
-      }
-    });
-  }
 
-  function initServiceOptions() {
-    const serviceOptions = document.querySelectorAll(
-      ".service-options .form-option"
-    );
-    serviceOptions.forEach((option) => {
-      option.tabIndex = 0;
-      option.addEventListener("click", handleServiceSelect);
+        if (input.name === "date") {
+          const date = new Date();
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, "0");
+          const day = date.getDate().toString().padStart(2, "0");
+
+          input.min = `${year}-${month}-${day}`;
+        }
+      }
     });
   }
 
@@ -501,11 +551,12 @@ Webflow.push(function () {
 
     initFormSteps();
     initServiceOptions();
-    updateStep(stepIndex);
+    updateStep(0);
 
-    // DEV ONLY!
-    initDevButtons();
-    // initLogModal();
+    if (dev) {
+      initDevButtons();
+      // initLogModal();
+    }
 
     const safariMobile = isSafariMobile();
     if (safariMobile) {
@@ -523,7 +574,15 @@ Webflow.push(function () {
       const service = userInput["service-info"]["service"];
       const serviceOption = document.querySelector(`#${service}`);
       serviceOption.classList.add("selected");
-      initFormSteps(service);
+    }
+
+    // scroll to selection
+    if (userInput["service-info"]["service"]) {
+      const serviceStep = document.querySelector("[data-step='service']");
+      const service = userInput["service-info"]["service"];
+      const serviceOption = document.querySelector(`#${service}`);
+      const scrollAmount = serviceOption.offsetTop - 100;
+      serviceStep.scrollTo(0, scrollAmount);
     }
 
     const styleElement = document.createElement("style");
@@ -532,9 +591,59 @@ Webflow.push(function () {
       .w-webflow-badge {
         display: none !important;
       }
+
+      .button:focus {
+        outline: none;
+        box-shadow: 0 0 0 1px #aaf;
+      }
+
+      .order-form-success,
+      .order-form-error {
+        transition: opacity 500ms ease-in-out 500ms;
+      }
           
       .form-step {
         transition: transform ${animationDuration}ms ease-in-out;
+      }
+
+      .button.disabled {
+        pointer-events: none;
+        opacity: 0.5;
+      }
+
+      .button.hidden {
+        pointer-events: none;
+        opacity: 0 !important;
+      }
+
+      .form-card .button.is-secondary {
+        opacity: 1;
+      }
+
+      .loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .loader-icon {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        border: 0.25rem solid #fff;
+        border-top: 0.25rem solid #000;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
       }
 
       .modal {
@@ -575,7 +684,76 @@ Webflow.push(function () {
     }
   }
 
-  function initFormSteps(service) {
+  function initFormMessage(type) {
+    const reviewStep = document.querySelector("[data-step='review']");
+
+    switch (type) {
+      case "success":
+        const service = userInput["service-info"]["service"];
+
+        const successMessageText = {
+          "private-event":
+            "Your order has been received! Adam will be in touch shortly to help craft your event menu.",
+          "luxury-catering":
+            "Your order has been received! You can now proceed to checkout.",
+          "performance-catering":
+            "Your order has been received! Adam will be in touch shortly to help craft your menu.",
+          "meal-plan":
+            "Your order has been received! Please proceed to checkout.",
+        };
+        const successButtonText = {
+          "private-event": "Home",
+          "luxury-catering": "Checkout",
+          "performance-catering": "Home",
+          "meal-plan": "Checkout",
+        };
+        const successButtonLinks = {
+          "private-event": "/",
+          "luxury-catering": "/checkout",
+          "performance-catering": "/",
+          "meal-plan": userInput["checkout-link"],
+        };
+
+        const successElement = document.querySelector(".order-form-success");
+        const successMessage = document.querySelector(".order-form-message");
+        const successButton = document.querySelector("#success-button");
+
+        reviewStep.style.marginTop = "2rem";
+        successElement.style.display = "block";
+
+        if (dev) {
+          setTimeout(() => {
+            successElement.style.opacity = 1;
+          }, 25);
+        } else {
+          successElement.style.opacity = 1;
+        }
+
+        successMessage.textContent = successMessageText[service];
+        successButton.textContent = successButtonText[service];
+        successButton.href = successButtonLinks[service];
+
+        break;
+      case "error":
+        const errorElement = document.querySelector(".order-form-error");
+        reviewStep.style.marginTop = "2rem";
+        errorElement.style.display = "block";
+
+        if (dev) {
+          setTimeout(() => {
+            errorElement.style.opacity = 1;
+          }, 25);
+        } else {
+          errorElement.style.opacity = 1;
+        }
+
+        break;
+      default:
+        break;
+    }
+  }
+
+  function initFormSteps() {
     const formFlows = {
       "private-event": [
         "service",
@@ -611,20 +789,22 @@ Webflow.push(function () {
         "review",
       ],
     };
+
+    const service = userInput["service-info"]["service"];
     if (service) formFlow = formFlows[service];
-    formSteps = [];
 
     const formStepWrapper = document.querySelector(".form-step-wrapper");
     while (formStepWrapper.children.length > 1) {
       formStepWrapper.removeChild(formStepWrapper.lastChild);
     }
 
+    formSteps = [];
     formFlow.forEach((step) => {
       const stepElement = [...allSteps].find(
         (element) => element.dataset.step === step
       );
       formSteps.push(stepElement);
-      if (step === "service") return;
+      if (step === "service") return; // skip service step
       formStepWrapper.appendChild(stepElement);
     });
   }
@@ -704,9 +884,18 @@ Webflow.push(function () {
     );
     const mealPlanOptions = pricingStep.querySelectorAll(".form-option");
 
+    const eventHandlers = [];
+
     mealPlanOptions.forEach((option, i) => {
       option.id = `meals-${(i + 1) * 5}`;
-      option.addEventListener("click", (e) => handlePlanSelect(e, i));
+
+      const handler = (e) => handlePlanSelect(e, i);
+      eventHandlers[i] = handler;
+      if (eventHandlers[i]) {
+        option.removeEventListener("click", eventHandlers[i]);
+      }
+
+      option.addEventListener("click", handler);
     });
 
     // initialize user meal plan selection
@@ -722,7 +911,15 @@ Webflow.push(function () {
       mealPlanOption.classList.add("selected");
     }
 
+    //initialize custom meal plan link
+    const customMealPlanLink = pricingStep.querySelector(".phone-link");
+    customMealPlanLink.onclick = () => {
+      showPopup("meal-plan");
+    };
+
     function handlePlanSelect(e, i) {
+      if (isAnimating) return;
+
       const clickedOption = e.target.closest(".form-option");
       if (!clickedOption) return;
 
@@ -772,9 +969,20 @@ Webflow.push(function () {
         .replace("USD", "")
         .trim();
       const input = quantityInputs[i];
+
+      let quantity;
+      if (name === "Service Fee") {
+        quantity = 1;
+      } else {
+        quantity = menuState[menuType][name]?.quantity || 0;
+      }
+
+      if (quantity > 0) item.classList.add("selected");
+      else item.classList.remove("selected");
+
       menuState[menuType][name] = {
         price,
-        quantity: menuState[menuType][name]?.quantity || 0,
+        quantity,
         input,
         addToCartButton: addToCartButtons[i],
       };
@@ -816,12 +1024,12 @@ Webflow.push(function () {
 
     if (userInput["service-info"]["service"] === "luxury-catering") {
       for (let item in menuState["luxury-catering-menu"]) {
+        if (item === "total") {
+          addInput(item, menuState["luxury-catering-menu"][item]);
+          continue;
+        }
         const quantity = menuState["luxury-catering-menu"][item].quantity;
-        if (quantity === 0) continue;
-        const input = document.createElement("input");
-        input.name = item;
-        input.value = quantity;
-        form.appendChild(input);
+        addInput(item, quantity);
       }
     }
 
@@ -843,25 +1051,30 @@ Webflow.push(function () {
       ".review-header .review-item-value"
     );
     const service = userInput["service-info"]["service"];
-    serviceElement.textContent = service.replaceAll("-", " ");
+    let serviceText = service.replaceAll("-", " ");
+    if (serviceText === "meal plan") {
+      const mealPlan = userInput["service-info"]["meal-plan"];
+      serviceText = serviceText + ` (${mealPlan} meals/week)`;
+    }
+    serviceElement.textContent = serviceText;
     serviceElement.classList.add("capitalize");
 
     reviewInfo.innerHTML = "";
 
     initContactSection();
 
-    if (service === "meal-plan") initAthleteSection();
+    if (service === "meal-plan") initMealPlanSection();
     else initEventSection();
 
     if (service === "luxury-catering") initMenuSection();
 
     if (userInput["additional-info"]) initAdditionalSection();
 
-    if (!isMobile) addSubmitButton();
+    if (!isMobile) initSubmitButton();
 
-    function addSubmitButton() {
+    function initSubmitButton() {
       const submitButton = document.createElement("input");
-      submitButton.onclick = handleSubmit;
+      submitButton.onclick = handleFormSubmission;
       submitButton.value = "Submit";
       submitButton.classList.add("button", "w-button");
       reviewInfo.appendChild(submitButton);
@@ -885,7 +1098,7 @@ Webflow.push(function () {
       additionalSection.appendChild(reviewItem);
     }
 
-    function initAthleteSection() {
+    function initMealPlanSection() {
       const athleteSection = document.createElement("div");
       athleteSection.classList.add("review-section");
       athleteSection.onclick = () => handleSectionClick("meal-plan-info");
@@ -893,7 +1106,7 @@ Webflow.push(function () {
 
       const athleteTitle = document.createElement("div");
       athleteTitle.classList.add("label");
-      athleteTitle.textContent = "Athlete Info:";
+      athleteTitle.textContent = "Your Profile";
       athleteSection.appendChild(athleteTitle);
 
       const athleteInfo = userInput["meal-plan-info"];
@@ -923,16 +1136,13 @@ Webflow.push(function () {
       contactTitle.textContent = "Contact Info:";
       contactSection.appendChild(contactTitle);
 
-      let contactInfo = userInput["contact-info"];
-      if (userInput["service-info"]["venue"] === "yacht") {
-        contactInfo = userInput["yacht-contact-info"];
-      }
+      const contactInfo = userInput["contact-info"];
 
       for (let item in contactInfo) {
         const reviewItem = document.createElement("div");
         const label = item.replaceAll("-", " ");
         let value = contactInfo[item];
-        if (item === "phone" || item === "broker-phone") {
+        if (item === "phone" || item === "poc-phone") {
           value = formatPhone(value);
         }
         reviewItem.classList.add("review-item");
@@ -990,6 +1200,9 @@ Webflow.push(function () {
         if (item === "total") continue;
         const quantity = menuState["luxury-catering-menu"][item].quantity;
         if (quantity === 0) continue;
+
+        const price = menuState["luxury-catering-menu"][item].price;
+
         const reviewItem = document.createElement("div");
         reviewItem.classList.add("review-item");
         reviewItem.innerHTML = `
@@ -998,7 +1211,7 @@ Webflow.push(function () {
             <div class="review-item-name">${item}</div>
           </div>
           <div class="dotted-line"></div>
-          <div class="review-item-price">$${menuState["luxury-catering-menu"][item].price}</div>
+          <div class="review-item-price">$${quantity * price}</div>
       `;
         menuSection.appendChild(reviewItem);
       }
@@ -1048,6 +1261,16 @@ Webflow.push(function () {
     }
   }
 
+  function initServiceOptions() {
+    const serviceOptions = document.querySelectorAll(
+      ".service-options .form-option"
+    );
+    serviceOptions.forEach((option) => {
+      option.tabIndex = 0;
+      option.addEventListener("click", handleServiceSelect);
+    });
+  }
+
   function initVenueOptions() {
     const venueOptions = document.querySelectorAll(
       ".venue-options .form-option"
@@ -1060,15 +1283,41 @@ Webflow.push(function () {
 
     // initialize user venue selection
     const venue = userInput["service-info"]["venue"] || null;
-    if (!venue) return;
+    if (!venue) {
+      venueOptions.forEach((option) => {
+        option.classList.remove("selected");
+      });
+      return;
+    }
     const venueOption = document.querySelector(`#${venue}`);
     venueOption.classList.add("selected");
-    if (venue === "yacht") {
-      formFlow = formFlow.map((step) => {
-        if (step === "contact-info") return "yacht-contact-info";
-        return step;
-      });
+
+    // scroll to venue selection
+    const venueStep = document.querySelector("[data-step='venue']");
+    const scrollAmount = venueOption.offsetTop - 100;
+    venueStep.scrollTo(0, scrollAmount);
+  }
+
+  function removeButtons() {
+    const formButtons = document.querySelector(".form-button-group");
+    formButtons.style.display = "none";
+  }
+
+  function removeLoader() {
+    const loader = document.querySelector(".loader");
+    if (loader) {
+      loader.style.transition = `opacity 500ms ease-in-out`;
+      loader.style.opacity = 0;
+      setTimeout(() => {
+        document.body.removeChild(loader);
+      }, 500);
     }
+  }
+
+  function removeProgressBar() {
+    const formProgress = document.querySelector(".form-progress");
+    formProgress.style.transition = `opacity 500ms ease-in-out`;
+    formProgress.style.opacity = 0;
   }
 
   function showError(error) {
@@ -1077,28 +1326,29 @@ Webflow.push(function () {
     errorMessage.classList.add("active");
   }
 
-  function showPopup() {
+  function showPopup(type) {
     const popup = document.querySelector(".form-popup");
     popup.style.display = "flex";
+    const textDivs = popup.querySelectorAll(`.form-popup-text`);
+    textDivs.forEach((div) => {
+      if (div.classList.contains(type)) div.style.display = "block";
+      else div.style.display = "none";
+    });
   }
 
   function updateButtons() {
-    backButton.draggable = false;
-    nextButton.draggable = false;
+    backButton.classList.add("disabled");
+    nextButton.classList.add("disabled");
 
-    backButton.disabled = true;
-    nextButton.disabled = true;
     setTimeout(() => {
-      backButton.disabled = false;
-      nextButton.disabled = false;
+      backButton.classList.remove("disabled");
+      nextButton.classList.remove("disabled");
     }, 250);
 
     if (stepIndex === 0) {
-      backButton.style.opacity = 0;
-      backButton.style.pointerEvents = "none";
+      backButton.classList.add("hidden");
     } else {
-      backButton.style.opacity = 1;
-      backButton.style.pointerEvents = "auto";
+      backButton.classList.remove("hidden");
     }
 
     if (isMobile) {
@@ -1121,40 +1371,43 @@ Webflow.push(function () {
   function updateHeader() {
     const formTitle = document.querySelector(".form-title");
     const formSubtitle = document.querySelector(".form-subtitle");
-    let step = formFlow[stepIndex];
+    const venue = userInput["service-info"]["venue"];
+    const step = formFlow[stepIndex];
 
-    let titles = {
+    const titles = {
       service: "What brings you in?",
       venue: "Where will your event be held?",
       ["luxury-catering-menu"]: "Luxury Catering Menu",
       ["performance-catering-menu"]: "Performance Catering Menu",
       ["private-event-menu"]: "Menu",
       ["contact-info"]: "Contact Information",
-      ["yacht-contact-info"]: "Contact Information",
       ["event-info"]: "Event Information",
-      ["meal-plan-info"]: "Athlete Information",
+      ["meal-plan-info"]: "Your Profile",
       ["meal-plan-pricing"]: "Meal Plan Options",
       ["additional-info"]: "Additional information",
       review: "Review",
     };
     formTitle.textContent = titles[step];
 
-    let subtitles = {
+    const subtitles = {
       service: "Select the service you're interested in.",
       venue: "Select the venue for your event.",
-      ["luxury-catering-menu"]: "Select the quantity of each item",
-      ["performance-catering-menu"]: "View our performance catering menu.",
-      ["private-event-menu"]: "View our private events menu.",
-      ["contact-info"]: "Let us know a bit about you.",
-      ["yacht-contact-info"]:
-        "Enter your charter broker's contact information.",
+      ["luxury-catering-menu"]: `
+        <div>View the full menu <a href="/menus/luxury-catering" style="color:#0af" target="_blank">here</a>.</div>
+      `,
+      ["performance-catering-menu"]: "Scroll click or tap to view our menu.",
+      ["private-event-menu"]: "Scroll click or tap to view our menu.",
+      ["contact-info"]:
+        venue === "home"
+          ? "Let us know a bit about you."
+          : "Who should we conact to coordinate delivery?",
       ["event-info"]: "Tell us more about the event.",
-      ["meal-plan-info"]: "Enter your athlete's information.",
+      ["meal-plan-info"]: "Enter your information to build out your meal plan.",
       ["meal-plan-pricing"]: "Select your meal plan.",
-      ["additional-info"]: "Enter any additional information.",
+      ["additional-info"]: "Tell us a little more about your event.",
       review: "Click/Tap a section to make changes.",
     };
-    formSubtitle.textContent = subtitles[step];
+    formSubtitle.innerHTML = subtitles[step];
   }
 
   function updateMenuState(e, menuType) {
@@ -1165,7 +1418,8 @@ Webflow.push(function () {
     if (quantity === NaN) {
       e.target.value = 0;
       return;
-    }
+    } else if (quantity > 0) menuItem.classList.add("selected");
+    else menuItem.classList.remove("selected");
 
     menuState[menuType][name].quantity = quantity;
 
@@ -1174,28 +1428,32 @@ Webflow.push(function () {
     sessionStorage.setItem("menuState", JSON.stringify(menuState));
 
     hideError();
-
-    function calculateTotal() {
-      let total = 0;
-      for (let item in menuState[menuType]) {
-        if (item === "total") continue;
-
-        const quantity = menuState[menuType][item].quantity;
-        if (quantity === 0) continue;
-
-        const price = parseFloat(menuState[menuType][item].price);
-        total += quantity * price;
-      }
-
-      return total;
-    }
   }
 
-  function updateProgressBar() {
+  function updateProgressBar(state) {
     const progressBar = document.querySelector(".form-progress-bar");
+
+    switch (state) {
+      case "submit":
+        progressBar.style.transition = "width 5000ms ease";
+        progressBar.style.width = `95%`;
+        return;
+      case "success":
+        progressBar.style.transition = "width 500ms ease-in-out";
+        progressBar.style.width = `100%`;
+        return;
+      case "error":
+        progressBar.style.transition = "width 500ms ease-in-out";
+        progressBar.style.width = `0%`;
+        return;
+      default:
+        break;
+    }
+
     const totalSteps = formSteps.length;
     const completedSteps = stepIndex;
     const progressPercentage = (completedSteps / totalSteps) * 100;
+    progressBar.style.transition = `width ${animationDuration}ms ease-in-out`;
     progressBar.style.width = `${progressPercentage}%`;
   }
 
@@ -1219,20 +1477,17 @@ Webflow.push(function () {
 
     stepIndex += incrementor;
 
-    formSteps.forEach((step) => {
-      step.style.transform = `translateX(${stepIndex * -100}%)`;
-    });
+    setTimeout(() => {
+      formSteps.forEach((step) => {
+        step.style.transform = `translateX(${stepIndex * -100}%)`;
+      });
+    }, 25);
 
     updateProgressBar();
     updateHeader();
     updateButtons();
 
     if (stepIndex === 0) return;
-
-    if (stepIndex === formSteps.length - 1) {
-      initOrderForm();
-      initReview();
-    }
 
     const step = formFlow[stepIndex];
     switch (step) {
@@ -1245,17 +1500,18 @@ Webflow.push(function () {
       case "contact-info":
         initContactInfo();
         break;
-      case "yacht-contact-info":
-        initContactInfo("yacht");
-        break;
       case "event-info":
         initEventInfo();
         break;
       case "meal-plan-info":
-        initAthleteInfo();
+        initMealPlanInfo();
         break;
       case "meal-plan-pricing":
         initMealPlanPricing();
+        break;
+      case "review":
+        initOrderForm();
+        initReview();
         break;
       default:
         break;
