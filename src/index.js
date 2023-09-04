@@ -20,7 +20,7 @@ import {
 window.addEventListener("click", handleStepChange);
 window.addEventListener("resize", handleResize);
 
-export const dev = 1;
+export const dev = 0;
 export const animationDuration = 400;
 
 export let userInput = JSON.parse(sessionStorage.getItem("userInput")) || {};
