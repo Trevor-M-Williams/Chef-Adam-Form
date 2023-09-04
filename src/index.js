@@ -1,5 +1,5 @@
 Webflow.push(function () {
-  const dev = 0;
+  const dev = 1;
 
   window.addEventListener("click", handleStepChange);
   window.addEventListener("resize", handleResize);
@@ -622,9 +622,7 @@ Webflow.push(function () {
 
       .loader {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        inset: 0;
         z-index: 100;
         display: flex;
         flex-direction: column;
@@ -699,7 +697,7 @@ Webflow.push(function () {
           "performance-catering":
             "Your order has been received! Adam will be in touch shortly to help craft your menu.",
           "meal-plan":
-            "Your order has been received! Please proceed to checkout.",
+            "Your order has been received! Adam will be in touch shortly to help craft your meal plan. You can now proceed to checkout.",
         };
         const successButtonText = {
           "private-event": "Home",
