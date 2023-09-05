@@ -78,9 +78,9 @@ export function initStyles() {
       }
       
       #open-log-modal {
-        position: fixed;
+        position: absolute;
         bottom: 5px;
-        left: 5px;
+        right: 5px;
       }
 
       .close {

@@ -20,7 +20,7 @@ import {
 window.addEventListener("click", handleStepChange);
 window.addEventListener("resize", handleResize);
 
-export const dev = 0;
+export const dev = 1;
 export const animationDuration = 400;
 
 export let userInput = JSON.parse(sessionStorage.getItem("userInput")) || {};
@@ -32,7 +32,7 @@ export let formFlow = ["service"];
 export let isMobile = false;
 export let backButton;
 export let nextButton;
-let isAnimating = false;
+export let isAnimating = false;
 let mealPlanOpionsInitialized = false;
 
 const allSteps = document.querySelectorAll(".form-step");
@@ -198,7 +198,8 @@ function initForm() {
 
   if (dev) {
     initDevButtons();
-    // initLogModal();
+    initLogModal();
+    // logToModal("Initialized form");
   }
 
   const safariMobile = isSafariMobile();
@@ -314,11 +315,11 @@ export function updateStep(incrementor) {
 
   stepIndex += incrementor;
 
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     formSteps.forEach((step) => {
       step.style.transform = `translateX(${stepIndex * -100}%)`;
     });
-  }, 25);
+  });
 
   updateProgressBar();
   updateHeader();

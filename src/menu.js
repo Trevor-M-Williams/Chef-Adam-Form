@@ -39,7 +39,9 @@ export function handleMenuStep(menuType) {
     const addToCartButton = items[key].addToCartButton;
 
     setTimeout(() => {
+      addToCartButton.disabled = false;
       addToCartButton.click();
+      addToCartButton.disabled = true;
     }, i * 250 + 500);
     i++;
   }
@@ -61,6 +63,10 @@ export function initMenu(menuType) {
   const addToCartButtons = step.querySelectorAll(
     "[data-node-type='commerce-add-to-cart-button']"
   );
+
+  addToCartButtons.forEach((button) => {
+    button.disabled = true;
+  });
 
   menuItems.forEach((item, i) => {
     const name = item.querySelector(".menu-item-name").textContent;
@@ -97,15 +103,18 @@ export function initMenu(menuType) {
 }
 
 function updateMenuState(e, menuType) {
-  const quantity = parseInt(e.target.value);
+  e.preventDefault();
+  console.log("updateMenuState");
+
+  const quantity = parseInt(e.target.value) || 0;
   const menuItem = e.target.closest(".menu-item");
   const name = menuItem.querySelector(".menu-item-name").textContent;
 
-  if (quantity === NaN) {
+  if (quantity > 0) menuItem.classList.add("selected");
+  else {
+    menuItem.classList.remove("selected");
     e.target.value = 0;
-    return;
-  } else if (quantity > 0) menuItem.classList.add("selected");
-  else menuItem.classList.remove("selected");
+  }
 
   menuState[menuType][name].quantity = quantity;
 
