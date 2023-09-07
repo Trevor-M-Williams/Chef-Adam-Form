@@ -6,6 +6,7 @@ import {
   stepIndex,
   updateStep,
 } from "./index.js";
+import { handleFormSubmission } from "./order.js";
 
 export function initOrderForm() {
   const form = document.querySelector(".order-form");

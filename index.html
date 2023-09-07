@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+      }
+      video,
+      img {
+        position: absolute;
+        height: 400px;
+      }
+
+      video {
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <video src="./home-video-mobile.mp4"></video>
+    <img src="./mobile-bg-screen.jpg" alt="" />
+
+    <script>
+      const videoElement = document.querySelector("video");
+      videoElement.currentTime = 54.75;
+      //   videoElement.play();
+
+      // create a button that shows/hides the video on click
+      const button = document.createElement("button");
+      button.innerText = "Show/Hide Video";
+      button.style.position = "absolute";
+      button.style.bottom = "25px";
+      button.style.left = "50%";
+      button.style.transform = "translate(-50%, -50%)";
+      button.style.zIndex = "2";
+      document.body.appendChild(button);
+
+      button.addEventListener("click", () => {
+        if (videoElement.style.opacity === "0") {
+          videoElement.style.opacity = "1";
+        } else {
+          videoElement.style.opacity = "0";
+        }
+      });
+    </script>
+  </body>
+</html>

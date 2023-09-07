@@ -2,6 +2,7 @@ import { dev, userInput } from "./index.js";
 import { updateProgressBar } from "./ui.js";
 
 function addLoader() {
+  const reviewStep = document.querySelector("[data-step='review']");
   const loader = document.createElement("div");
   loader.className = "loader";
 
@@ -9,7 +10,7 @@ function addLoader() {
   loaderIcon.className = "loader-icon";
 
   loader.appendChild(loaderIcon);
-  document.body.appendChild(loader);
+  reviewStep.appendChild(loader);
 }
 
 function handleFormResponse(type) {
@@ -186,7 +187,7 @@ function removeLoader() {
     loader.style.transition = `opacity 500ms ease-in-out`;
     loader.style.opacity = 0;
     setTimeout(() => {
-      document.body.removeChild(loader);
+      loader.remove();
     }, 500);
   }
 }
