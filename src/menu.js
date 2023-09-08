@@ -1,5 +1,19 @@
 import { menuState } from "./index.js";
-import { hideError, showError } from "./ui.js";
+import { hideError, showError, showPopup } from "./ui.js";
+
+function calculateTotal(menuType) {
+  let total = 0;
+  for (let item in menuState[menuType]) {
+    if (item === "total") continue;
+
+    const quantity = menuState[menuType][item].quantity;
+    if (quantity === 0) continue;
+
+    const price = parseFloat(menuState[menuType][item].price);
+    total += quantity * price;
+  }
+  return total;
+}
 
 export function handleMenuStep(menuType) {
   let itemSelected = false;
@@ -57,6 +71,12 @@ export function initMenu(menuType) {
     return;
   }
 
+  // add cart event listener
+  const cartIcon = document.querySelector(".cart-icon");
+  cartIcon.style.display = "block";
+  cartIcon.addEventListener("click", () => showPopup("cart"));
+
+  // initialize menuState
   const step = document.querySelector(`[data-step='${menuType}']`);
   const menuItems = step.querySelectorAll(".menu-item");
   const quantityInputs = step.querySelectorAll(".menu-item-quantity");
@@ -100,11 +120,49 @@ export function initMenu(menuType) {
     menuState[menuType][dish].input.value = menuState[menuType][dish].quantity;
     menuState[menuType][dish].input.min = 0;
   }
+
+  updateCart(menuType);
+}
+
+export function updateCart(menuType) {
+  const cartContent = document.querySelector(".review-section.cart");
+  cartContent.innerHTML = `<div class="label cart">Cart</div>`;
+
+  const items = menuState[menuType];
+  for (const key in items) {
+    if (key === "Service Fee") continue;
+    const quantity = items[key].quantity;
+    if (!quantity) continue;
+    if (quantity === 0) continue;
+
+    const price = parseFloat(items[key].price);
+
+    const reviewItem = document.createElement("div");
+    reviewItem.classList.add("review-item");
+    reviewItem.innerHTML = `
+            <div class="review-flex">
+              <div class="menu-item-value">${quantity}</div>
+              <div class="review-item-name">${key}</div>
+            </div>
+            <div class="dotted-line"></div>
+            <div class="review-item-price">$${quantity * price}</div>
+        `;
+    cartContent.appendChild(reviewItem);
+  }
+
+  const total = document.createElement("div");
+  total.classList.add("review-item", "total");
+  total.innerHTML = `
+          <div class="label total">Food Total:</div>
+          <div class="dotted-line"></div>
+          <div class="review-item-price total">$${menuState["luxury-catering-menu"].total}</div>
+        `;
+  cartContent.appendChild(total);
 }
 
 function updateMenuState(e, menuType) {
   e.preventDefault();
-  console.log("updateMenuState");
+  hideError();
 
   const quantity = parseInt(e.target.value) || 0;
   const menuItem = e.target.closest(".menu-item");
@@ -122,19 +180,5 @@ function updateMenuState(e, menuType) {
   menuState[menuType].total = total;
   sessionStorage.setItem("menuState", JSON.stringify(menuState));
 
-  hideError();
-}
-
-function calculateTotal(menuType) {
-  let total = 0;
-  for (let item in menuState[menuType]) {
-    if (item === "total") continue;
-
-    const quantity = menuState[menuType][item].quantity;
-    if (quantity === 0) continue;
-
-    const price = parseFloat(menuState[menuType][item].price);
-    total += quantity * price;
-  }
-  return total;
+  updateCart(menuType);
 }

@@ -14,6 +14,8 @@ function addLoader() {
 }
 
 function handleFormResponse(type) {
+  console.log(type);
+
   updateProgressBar(type);
   removeButtons();
   removeLoader();
@@ -116,13 +118,13 @@ function initFormMessage(type) {
 
       const successMessageText = {
         "private-event":
-          "Your order has been received! Adam will be in touch shortly to help craft your event menu.",
+          "Your order has been received! Our team will be in touch shortly to help craft your event menu.",
         "luxury-catering":
           "Your order has been received! You can now proceed to checkout.",
         "performance-catering":
-          "Your order has been received! Adam will be in touch shortly to help craft your menu.",
+          "Your order has been received! Our team will be in touch shortly to help craft your menu.",
         "meal-plan":
-          "Your order has been received! Adam will be in touch shortly to help craft your meal plan. You can now proceed to checkout.",
+          "Your order has been received! Our team will be in touch shortly to help craft your meal plan. You can now proceed to checkout.",
       };
       const successButtonText = {
         "private-event": "Home",

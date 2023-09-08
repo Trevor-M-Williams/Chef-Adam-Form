@@ -9,6 +9,8 @@ import {
   isMobile,
 } from "./index.js";
 
+import { updateCart } from "./menu.js";
+
 export function updateButtons() {
   backButton.classList.add("disabled");
   nextButton.classList.add("disabled");
@@ -66,7 +68,7 @@ export function updateHeader() {
     service: "Select the service you're interested in.",
     venue: "Select the venue for your event.",
     ["luxury-catering-menu"]: `
-          <div>View the full menu <a href="/menus/luxury-catering" style="color:#0af" target="_blank">here</a>.</div>
+          <div>View the full menu <a href="/menus/luxury-catering" class="form-link" target="_blank">here</a>.</div>
         `,
     ["performance-catering-menu"]: "Scroll click or tap to view our menu.",
     ["private-event-menu"]: "Scroll click or tap to view our menu.",
@@ -77,8 +79,10 @@ export function updateHeader() {
     ["event-info"]: "Tell us more about the event.",
     ["meal-plan-info"]: "Enter your information to build out your meal plan.",
     ["meal-plan-pricing"]: "Select your meal plan.",
-    ["additional-info"]: "Tell us a little more about your event.",
-    review: "Click/Tap a section to make changes.",
+    ["additional-info"]: "Tell us a little more about your booking.",
+    review: `Click/Tap a section to make changes. ${
+      isMobile ? "" : "Scroll to submit."
+    }`,
   };
   formSubtitle.innerHTML = subtitles[step];
 }
@@ -124,9 +128,19 @@ export function showError(error) {
 export function showPopup(type) {
   const popup = document.querySelector(".form-popup");
   popup.style.display = "flex";
-  const textDivs = popup.querySelectorAll(`.form-popup-text`);
-  textDivs.forEach((div) => {
-    if (div.classList.contains(type)) div.style.display = "block";
-    else div.style.display = "none";
+
+  const popupWrappers = document.querySelectorAll(".form-popup-wrapper");
+  popupWrappers.forEach((wrapper) => {
+    console.log(wrapper);
+    if (wrapper.classList) {
+      wrapper.classList.remove("active");
+      if (wrapper.classList.contains(type)) {
+        wrapper.classList.add("active");
+      }
+    }
   });
+
+  const disclaimer = document.querySelector(".disclaimer");
+  if (type === "cart") disclaimer.style.display = "block";
+  else disclaimer.style.display = "none";
 }

@@ -57,7 +57,7 @@ export function initMealPlanOptions() {
   }
 
   //initialize custom meal plan link
-  const customMealPlanLink = pricingStep.querySelector(".phone-link");
+  const customMealPlanLink = pricingStep.querySelector(".form-link");
   customMealPlanLink.onclick = () => {
     showPopup("meal-plan");
   };

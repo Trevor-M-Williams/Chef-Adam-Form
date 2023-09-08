@@ -7,7 +7,7 @@ import { initEventInfo } from "./event.js";
 import { handleMenuStep, initMenu } from "./menu.js";
 import { initMealPlanInfo, initMealPlanOptions } from "./meal-plan.js";
 import { initOrderForm, initReview } from "./review.js";
-import { handleFormSubmission, handleFormSubmissionDev } from "./order.js";
+import { handleFormSubmission, handleFormSubmissionDev } from "./submit.js";
 import {
   updateProgressBar,
   updateButtons,
@@ -35,7 +35,7 @@ export let nextButton;
 export let isAnimating = false;
 let mealPlanOpionsInitialized = false;
 
-const allSteps = document.querySelectorAll(".form-step");
+export const allSteps = document.querySelectorAll(".form-step");
 export const contactInputWrappers = document.querySelectorAll(
   "[data-step='contact-info'] .input-wrapper"
 );
@@ -142,6 +142,10 @@ function handleStepChange(e) {
       break;
     case "luxury-catering-menu":
       if (!handleMenuStep("luxury-catering-menu")) return;
+      const cartIcon = document.querySelector(".cart-icon");
+      const disclaimer = document.querySelector(".disclaimer");
+      cartIcon.style.display = "none";
+      disclaimer.style.display = "block";
       break;
     case "menu":
       break;
@@ -199,7 +203,7 @@ function initForm() {
   if (dev) {
     initDevButtons();
     initLogModal();
-    // logToModal("Initialized form");
+    logToModal("Initialized form");
   }
 
   const safariMobile = isSafariMobile();

@@ -6,18 +6,18 @@ import {
   stepIndex,
   updateStep,
 } from "./index.js";
-import { handleFormSubmission } from "./order.js";
+import { handleFormSubmission } from "./submit.js";
 
 export function initOrderForm() {
   const form = document.querySelector(".order-form");
   form.innerHTML = `
-        <input
-          type="submit"
-          value="Submit"
-          data-wait="Please wait..."
-          class="w-button"
-        />
-      `;
+    <input
+      type="submit"
+      value="Submit"
+      data-wait="Please wait..."
+      class="w-button"
+    />
+  `;
 
   let infoCategories = ["service-info", "contact-info", "event-info"];
   if (userInput["service-info"]["service"] === "meal-plan") {
