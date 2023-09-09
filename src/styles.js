@@ -8,10 +8,6 @@ export function initStyles() {
         display: none !important;
       }
 
-      .cart-icon {
-        display: none;
-      }
-
       .button:focus {
         outline: none;
         box-shadow: 0 0 0 1px #aaf;

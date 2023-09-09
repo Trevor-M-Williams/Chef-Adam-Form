@@ -7,7 +7,8 @@ function handleVenueSelect(e) {
   const clickedOption = e.target.closest(".form-option");
   if (!clickedOption) return;
 
-  const venueOptions = document.querySelectorAll(".venue-options .form-option");
+  const venueStep = document.querySelector("[data-step='venue']");
+  const venueOptions = venueStep.querySelectorAll(".form-option");
   venueOptions.forEach((option) => {
     if (option !== clickedOption) option.classList.remove("selected");
     else option.classList.add("selected");
@@ -23,7 +24,8 @@ function handleVenueSelect(e) {
 }
 
 export function initVenueOptions() {
-  const venueOptions = document.querySelectorAll(".venue-options .form-option");
+  const venueStep = document.querySelector("[data-step='venue']");
+  const venueOptions = venueStep.querySelectorAll(".form-option");
 
   venueOptions.forEach((option) => {
     option.tabIndex = 0;
@@ -42,7 +44,6 @@ export function initVenueOptions() {
   venueOption.classList.add("selected");
 
   // scroll to venue selection
-  const venueStep = document.querySelector("[data-step='venue']");
   const scrollAmount = venueOption.offsetTop - 100;
   venueStep.scrollTo(0, scrollAmount);
 }

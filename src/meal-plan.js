@@ -27,7 +27,9 @@ export function initMealPlanOptions() {
   ];
 
   const pricingStep = document.querySelector("[data-step='meal-plan-pricing']");
-  const mealPlanOptions = pricingStep.querySelectorAll(".form-option");
+  const mealPlanOptions = pricingStep.querySelectorAll(
+    ".form-option:not(.custom)"
+  );
 
   const eventHandlers = [];
 
@@ -55,12 +57,6 @@ export function initMealPlanOptions() {
     const mealPlanOption = document.querySelector(`#meals-${mealPlan}`);
     mealPlanOption.classList.add("selected");
   }
-
-  //initialize custom meal plan link
-  const customMealPlanLink = pricingStep.querySelector(".form-link");
-  customMealPlanLink.onclick = () => {
-    showPopup("meal-plan");
-  };
 
   function handlePlanSelect(e, i) {
     if (isAnimating) return;

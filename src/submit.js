@@ -14,8 +14,6 @@ function addLoader() {
 }
 
 function handleFormResponse(type) {
-  console.log(type);
-
   updateProgressBar(type);
   removeButtons();
   removeLoader();
@@ -99,19 +97,17 @@ export function handleFormSubmissionDev() {
 }
 
 function hideReviewItems() {
-  const formHeader = document.querySelector(".form-header");
+  // const formHeader = document.querySelector(".form-header");
   const formCardHeader = document.querySelector(".form-card-header");
   const reviewHeader = document.querySelector(".review-header");
   const reviewInfo = document.querySelector(".review-info");
-  formHeader.style.opacity = "0";
+  // formHeader.style.opacity = "0";
   formCardHeader.style.display = "none";
   reviewHeader.style.display = "none";
   reviewInfo.style.display = "none";
 }
 
 function initFormMessage(type) {
-  const reviewStep = document.querySelector("[data-step='review']");
-
   switch (type) {
     case "success":
       const service = userInput["service-info"]["service"];
@@ -143,7 +139,6 @@ function initFormMessage(type) {
       const successMessage = document.querySelector(".order-form-message");
       const successButton = document.querySelector("#success-button");
 
-      reviewStep.style.marginTop = "2rem";
       successElement.style.display = "block";
 
       if (dev) {
@@ -161,7 +156,6 @@ function initFormMessage(type) {
       break;
     case "error":
       const errorElement = document.querySelector(".order-form-error");
-      reviewStep.style.marginTop = "2rem";
       errorElement.style.display = "block";
 
       if (dev) {
@@ -180,7 +174,8 @@ function initFormMessage(type) {
 
 function removeButtons() {
   const formButtons = document.querySelector(".form-button-group");
-  formButtons.style.display = "none";
+  formButtons.style.opacity = "0";
+  formButtons.style.pointerEvents = "none";
 }
 
 function removeLoader() {

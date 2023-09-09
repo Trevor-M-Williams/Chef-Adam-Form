@@ -7,9 +7,8 @@ function handleServiceSelect(e) {
   const clickedOption = e.target.closest(".form-option");
   if (!clickedOption) return;
 
-  const serviceOptions = document.querySelectorAll(
-    ".service-options .form-option"
-  );
+  const serviceStep = document.querySelector("[data-step='service']");
+  const serviceOptions = serviceStep.querySelectorAll(".form-option");
   serviceOptions.forEach((option) => {
     if (option !== clickedOption) option.classList.remove("selected");
     else option.classList.add("selected");
@@ -32,9 +31,8 @@ function handleServiceSelect(e) {
 }
 
 export function initServiceOptions() {
-  const serviceOptions = document.querySelectorAll(
-    ".service-options .form-option"
-  );
+  const serviceStep = document.querySelector("[data-step='service']");
+  const serviceOptions = serviceStep.querySelectorAll(".form-option");
   serviceOptions.forEach((option) => {
     option.tabIndex = 0;
     option.addEventListener("click", handleServiceSelect);
