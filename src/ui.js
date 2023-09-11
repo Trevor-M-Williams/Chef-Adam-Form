@@ -9,8 +9,6 @@ import {
   isMobile,
 } from "./index.js";
 
-import { updateCart } from "./menu.js";
-
 export function updateButtons() {
   backButton.classList.add("disabled");
   nextButton.classList.add("disabled");
@@ -131,7 +129,6 @@ export function showPopup(type) {
 
   const popupWrappers = document.querySelectorAll(".form-popup-wrapper");
   popupWrappers.forEach((wrapper) => {
-    console.log(wrapper);
     if (wrapper.classList) {
       wrapper.classList.remove("active");
       if (wrapper.classList.contains(type)) {
