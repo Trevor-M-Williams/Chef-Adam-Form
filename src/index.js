@@ -123,6 +123,7 @@ function handleStepChange(e) {
 
   if (incrementor == null) return;
   if (incrementor < 0) {
+    if (stepIndex === 0) return;
     updateStep(incrementor);
     return;
   }

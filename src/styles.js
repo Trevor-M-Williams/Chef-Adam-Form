@@ -31,6 +31,15 @@ export function initStyles() {
         opacity: 0 !important;
       }
 
+      .form-button.disabled {
+        pointer-events: none;
+      }
+
+      .form-button.hidden {
+        pointer-events: none;
+        opacity: 0 !important;
+      }
+
       .form-card .button.is-secondary {
         opacity: 1;
       }

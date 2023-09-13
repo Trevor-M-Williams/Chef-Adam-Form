@@ -166,7 +166,7 @@ export function updateCart(menuType) {
   total.innerHTML = `
           <div class="label total">Food Total:</div>
           <div class="dotted-line"></div>
-          <div class="review-item-price total">$${
+          <div class="review-item-price total cart">$${
             menuState["luxury-catering-menu"]["total"] - 199
           }</div>
         `;
