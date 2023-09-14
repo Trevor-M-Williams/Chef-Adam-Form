@@ -197,10 +197,6 @@ function initForm() {
     image.draggable = false;
   });
 
-  initFormSteps();
-  initServiceOptions();
-  updateStep(0);
-
   if (dev) {
     initDevButtons();
     initLogModal();
@@ -233,6 +229,10 @@ function initForm() {
     const scrollAmount = serviceOption.offsetTop - 100;
     serviceStep.scrollTo(0, scrollAmount);
   }
+
+  initFormSteps();
+  initServiceOptions();
+  updateStep(0);
 
   function isSafariMobile() {
     const chromeAgent =

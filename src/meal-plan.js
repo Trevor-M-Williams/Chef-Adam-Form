@@ -48,7 +48,7 @@ export function initMealPlanOptions() {
   // initialize user meal plan selection
   const mealPlanLink = sessionStorage.getItem("mealPlanLink");
   if (mealPlanLink) {
-    const mealPlanOption = document.querySelector(`#${mealPlanLink}`);
+    const mealPlanOption = document.querySelector(`#meals-${mealPlanLink}`);
     mealPlanOption.classList.add("selected");
     userInput["service-info"]["meal-plan"] = mealPlanLink;
     sessionStorage.removeItem("mealPlanLink");
