@@ -295,7 +295,7 @@ export function initFormSteps() {
       (element) => element.dataset.step === step
     );
     formSteps.push(stepElement);
-    if (step === "service") return; // skip service step
+    if (step === "service") return;
     formStepWrapper.appendChild(stepElement);
   });
 }
