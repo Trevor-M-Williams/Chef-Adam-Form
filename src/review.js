@@ -134,11 +134,27 @@ export function initReview() {
 
     const athleteInfo = userInput["meal-plan-info"];
     for (let item in athleteInfo) {
+      if (item === "height-ft") {
+        const reviewItem = document.createElement("div");
+        const label = "Height";
+        let value =
+          athleteInfo["height-ft"] + "'" + athleteInfo["height-in"] + '"';
+        reviewItem.classList.add("review-item");
+        reviewItem.innerHTML = `
+              <div class="review-item-name">${label}:</div>
+              <div class="review-item-value capitalize">${value}</div>
+          `;
+        athleteSection.appendChild(reviewItem);
+
+        continue;
+      }
+
       const reviewItem = document.createElement("div");
       const label = item.replaceAll("-", " ");
       let value = athleteInfo[item];
       if (typeof value === "string") value = value.replaceAll("-", " ");
-      if (!value || item === "notice-confirmation") continue;
+      if (!value || item === "notice-confirmation" || item === "height-in")
+        continue;
       reviewItem.classList.add("review-item");
       reviewItem.innerHTML = `
               <div class="review-item-name">${label}:</div>

@@ -8,6 +8,10 @@ export function initStyles() {
         display: none !important;
       }
 
+      .form-option.selected {
+        box-shadow: 0 0 0 2px #202947;
+      }
+
       .button:focus {
         outline: none;
         box-shadow: 0 0 0 1px #aaf;
