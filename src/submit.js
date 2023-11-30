@@ -20,6 +20,12 @@ function handleFormResponse(type) {
   removeProgressBar();
   initFormMessage(type);
 
+  setTimeout(() => {
+    if (userInput["service-info"]["service"] === "meal-plan") {
+      window.location.href = userInput["checkout-link"];
+    }
+  }, 3000);
+
   const email = userInput["contact-info"]["email"];
   userInput["contact-info"]["email"] = email;
 
@@ -92,16 +98,20 @@ export function handleFormSubmissionDev() {
       removeLoader();
       removeProgressBar();
       initFormMessage(type);
+
+      setTimeout(() => {
+        if (userInput["service-info"]["service"] === "meal-plan") {
+          window.location.href = userInput["checkout-link"];
+        }
+      }, 3000);
     }, 1500);
   }
 }
 
 function hideReviewItems() {
-  // const formHeader = document.querySelector(".form-header");
   const formCardHeader = document.querySelector(".form-card-header");
   const reviewHeader = document.querySelector(".review-header");
   const reviewInfo = document.querySelector(".review-info");
-  // formHeader.style.opacity = "0";
   formCardHeader.style.display = "none";
   reviewHeader.style.display = "none";
   reviewInfo.style.display = "none";
@@ -119,7 +129,7 @@ function initFormMessage(type) {
         "performance-catering":
           "Your order has been received! Our team will be in touch shortly to help craft your menu.",
         "meal-plan":
-          "Please proceed to checkout to complete your order. Our team will be in touch shortly to help craft your meal plan.",
+          "You will now be redirected to checkout. Our team will be in touch shortly to help craft your meal plan.",
       };
       const successButtonText = {
         "private-event": "Home",

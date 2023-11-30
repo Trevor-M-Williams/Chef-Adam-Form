@@ -1,4 +1,5 @@
 import {
+  dev,
   userInput,
   menuState,
   isMobile,
@@ -6,7 +7,7 @@ import {
   stepIndex,
   updateStep,
 } from "./index.js";
-import { handleFormSubmission } from "./submit.js";
+import { handleFormSubmission, handleFormSubmissionDev } from "./submit.js";
 
 export function initOrderForm() {
   const form = document.querySelector(".order-form");
@@ -83,7 +84,11 @@ export function initReview() {
 
   function initSubmitButton() {
     const submitButton = document.createElement("input");
-    submitButton.onclick = handleFormSubmission;
+    if (dev) {
+      submitButton.onclick = handleFormSubmissionDev;
+    } else {
+      submitButton.onclick = handleFormSubmission;
+    }
     submitButton.value = "Submit";
     submitButton.classList.add("button", "w-button");
     reviewInfo.appendChild(submitButton);

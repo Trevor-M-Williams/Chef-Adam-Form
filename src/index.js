@@ -7,7 +7,6 @@ import { initEventInfo } from "./event.js";
 import { handleMenuStep, initMenu } from "./menu.js";
 import { initMealPlanInfo, initMealPlanOptions } from "./meal-plan.js";
 import { initOrderForm, initReview } from "./review.js";
-import { handleFormSubmission, handleFormSubmissionDev } from "./submit.js";
 import {
   updateProgressBar,
   updateButtons,
@@ -20,7 +19,9 @@ import {
 window.addEventListener("click", handleStepChange);
 window.addEventListener("resize", handleResize);
 
-export const dev = 0;
+export const dev = false;
+if (dev) console.log("dev mode active");
+
 export const animationDuration = 400;
 
 export let userInput = JSON.parse(sessionStorage.getItem("userInput")) || {};
@@ -33,7 +34,7 @@ export let isMobile = false;
 export let backButton;
 export let nextButton;
 export let isAnimating = false;
-let mealPlanOpionsInitialized = false;
+let mealPlanOptionsInitialized = false;
 
 export const allSteps = document.querySelectorAll(".form-step");
 export const contactInputWrappers = document.querySelectorAll(
@@ -162,10 +163,7 @@ function handleStepChange(e) {
       userInput["additional-info"] = additionalInfoInput.value;
       sessionStorage.setItem("userInput", JSON.stringify(userInput));
       break;
-    case "review":
-      if (dev) handleFormSubmissionDev();
-      else handleFormSubmission();
-      return;
+
     default:
       if (!handleInputs(step)) return;
       break;
@@ -350,9 +348,9 @@ export function updateStep(incrementor) {
       initMealPlanInfo();
       break;
     case "meal-plan-pricing":
-      if (!mealPlanOpionsInitialized) {
+      if (!mealPlanOptionsInitialized) {
         initMealPlanOptions();
-        mealPlanOpionsInitialized = true;
+        mealPlanOptionsInitialized = true;
       }
       break;
     case "review":
