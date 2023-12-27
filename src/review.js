@@ -80,7 +80,9 @@ export function initReview() {
 
   if (userInput["additional-info"]) initAdditionalSection();
 
-  if (!isMobile) initSubmitButton();
+  if (isMobile) {
+    // init mobile submit button
+  } else initSubmitButton();
 
   function initSubmitButton() {
     const submitButton = document.createElement("input");

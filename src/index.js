@@ -7,6 +7,7 @@ import { initEventInfo } from "./event.js";
 import { handleMenuStep, initMenu } from "./menu.js";
 import { initMealPlanInfo, initMealPlanOptions } from "./meal-plan.js";
 import { initOrderForm, initReview } from "./review.js";
+import { handleFormSubmission, handleFormSubmissionDev } from "./submit.js";
 import {
   updateProgressBar,
   updateButtons,
@@ -163,7 +164,10 @@ function handleStepChange(e) {
       userInput["additional-info"] = additionalInfoInput.value;
       sessionStorage.setItem("userInput", JSON.stringify(userInput));
       break;
-
+    case "review":
+      if (dev) handleFormSubmissionDev();
+      else handleFormSubmission();
+      return;
     default:
       if (!handleInputs(step)) return;
       break;
@@ -311,9 +315,11 @@ export function updateStep(incrementor) {
     const newStep = formSteps[stepIndex + incrementor];
 
     if (newStep) newStep.style.visibility = "visible";
-    setTimeout(() => {
-      oldStep.style.visibility = "hidden";
-    }, animationDuration);
+    if (oldStep) {
+      setTimeout(() => {
+        oldStep.style.visibility = "hidden";
+      }, animationDuration);
+    }
   }
 
   stepIndex += incrementor;

@@ -57,7 +57,7 @@ export function updateHeader() {
     ["event-info"]: "Event Information",
     ["meal-plan-info"]: "Your Profile",
     ["meal-plan-pricing"]: "Meal Plan Options",
-    ["additional-info"]: "Additional information",
+    ["additional-info"]: "Additional Information",
     review: "Review",
   };
   formTitle.textContent = titles[step];
