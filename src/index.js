@@ -20,7 +20,7 @@ import {
 window.addEventListener("click", handleStepChange);
 window.addEventListener("resize", handleResize);
 
-export const dev = true;
+export const dev = false;
 if (dev) console.log("dev mode active");
 
 export const animationDuration = 400;
