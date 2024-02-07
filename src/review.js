@@ -62,10 +62,22 @@ export function initReview() {
   );
   const service = userInput["service-info"]["service"];
   let serviceText = service.replaceAll("-", " ");
-  if (serviceText === "meal plan") {
-    const mealPlan = userInput["service-info"]["meal-plan"];
-    serviceText = serviceText + ` (${mealPlan} meals/week)`;
+
+  switch (service) {
+    case "private-event":
+      serviceText = "Live Event";
+      break;
+    case "meal-plan":
+      const mealPlan = userInput["service-info"]["meal-plan"];
+      serviceText = serviceText + ` (${mealPlan} meals/week)`;
+      break;
+    case "luxury-catering":
+      serviceText = "Delivered Catering";
+      break;
+    default:
+      break;
   }
+
   serviceElement.textContent = serviceText;
   serviceElement.classList.add("capitalize");
 
