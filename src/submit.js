@@ -48,9 +48,25 @@ export async function handleFormSubmission() {
   const docRef = doc(db, "orders", docID);
 
   try {
+    // save to firestore
     await setDoc(docRef, userInput);
-    console.log("Document written with ID: ", docID);
 
+    // send email
+    const url = "https://orders.luminatedenver.dev/api/send";
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ submission: { id: docID, ...userInput } }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // init success message
     handleFormResponse("success");
   } catch (e) {
     console.error("Error adding document: ", e);
