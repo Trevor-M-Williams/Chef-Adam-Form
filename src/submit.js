@@ -34,7 +34,7 @@ function handleFormResponse(type) {
   const email = userInput["contact-info"]["email"];
   userInput["contact-info"]["email"] = email;
 
-  // sessionStorage.clear();
+  sessionStorage.clear();
   sessionStorage.setItem("email", email);
 }
 
