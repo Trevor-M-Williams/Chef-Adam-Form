@@ -1,5 +1,7 @@
 import { dev, userInput } from "./index.js";
 import { updateProgressBar } from "./ui.js";
+import { db } from "./firebase.js";
+import { doc, setDoc } from "firebase/firestore";
 
 function addLoader() {
   const reviewStep = document.querySelector("[data-step='review']");
@@ -18,7 +20,10 @@ function handleFormResponse(type) {
   removeButtons();
   removeLoader();
   removeProgressBar();
-  initFormMessage(type);
+
+  setTimeout(() => {
+    initFormMessage(type);
+  }, 250);
 
   setTimeout(() => {
     if (userInput["service-info"]["service"] === "meal-plan") {
@@ -29,53 +34,28 @@ function handleFormResponse(type) {
   const email = userInput["contact-info"]["email"];
   userInput["contact-info"]["email"] = email;
 
-  sessionStorage.clear();
+  // sessionStorage.clear();
   sessionStorage.setItem("email", email);
 }
 
-export function handleFormSubmission() {
-  const form = document.querySelector(".order-form");
-  const submitButton = form.querySelector("input[type='submit']");
-  submitButton.click();
-
+export async function handleFormSubmission() {
   hideReviewItems();
   removeButtons();
   addLoader();
   updateProgressBar("submit");
 
-  const successElement = document.querySelector(".order-form-success");
-  const errorElement = document.querySelector(".order-form-error");
+  const docID = Date.now().toString();
+  const docRef = doc(db, "orders", docID);
 
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (
-        mutation.type === "attributes" &&
-        mutation.attributeName === "style"
-      ) {
-        const displayStyle = window
-          .getComputedStyle(mutation.target)
-          .getPropertyValue("display");
+  try {
+    await setDoc(docRef, userInput);
+    console.log("Document written with ID: ", docID);
 
-        if (mutation.target === successElement && displayStyle === "block") {
-          handleFormResponse("success");
-          observer.disconnect();
-        }
-
-        if (mutation.target === errorElement && displayStyle === "block") {
-          handleFormResponse("error");
-          observer.disconnect();
-        }
-      }
-    });
-  });
-
-  const config = {
-    attributes: true,
-    attributeFilter: ["style"],
-  };
-
-  if (successElement) observer.observe(successElement, config);
-  if (errorElement) observer.observe(errorElement, config);
+    handleFormResponse("success");
+  } catch (e) {
+    console.error("Error adding document: ", e);
+    handleFormResponse("error");
+  }
 }
 
 export function handleFormSubmissionDev() {
@@ -190,7 +170,7 @@ function removeButtons() {
 function removeLoader() {
   const loader = document.querySelector(".loader");
   if (loader) {
-    loader.style.transition = `opacity 500ms ease-in-out`;
+    loader.style.transition = `opacity 250ms ease`;
     loader.style.opacity = 0;
     setTimeout(() => {
       loader.remove();
@@ -200,6 +180,6 @@ function removeLoader() {
 
 function removeProgressBar() {
   const formProgress = document.querySelector(".form-progress");
-  formProgress.style.transition = `opacity 500ms ease-in-out`;
+  formProgress.style.transition = `opacity 250ms ease`;
   formProgress.style.opacity = 0;
 }

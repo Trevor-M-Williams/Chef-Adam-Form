@@ -165,6 +165,7 @@ function handleStepChange(e) {
       sessionStorage.setItem("userInput", JSON.stringify(userInput));
       break;
     case "review":
+      // strictly for mobile
       if (dev) handleFormSubmissionDev();
       else handleFormSubmission();
       return;
