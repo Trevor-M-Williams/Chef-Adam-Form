@@ -18,7 +18,7 @@ function handleServiceSelect(e) {
   userInput["service-info"]["service"] = service;
 
   if (service !== "meal-plan") userInput["service-info"]["meal-plan"] = "";
-  if (service === "performance-catering" || service === "meal-plan") {
+  if (service === "team-catering" || service === "meal-plan") {
     userInput["service-info"]["venue"] = "";
   }
 

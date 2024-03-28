@@ -64,10 +64,7 @@ export function handleMenuStep(menuType) {
 }
 
 export function initMenu(menuType) {
-  if (
-    menuType === "private-event-menu" ||
-    menuType === "performance-catering-menu"
-  ) {
+  if (menuType === "private-event-menu" || menuType === "team-catering-menu") {
     return;
   }
 

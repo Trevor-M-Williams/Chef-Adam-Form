@@ -21,7 +21,7 @@ export function initEventInfo() {
         eventInfo = ["marina-address", "boat-name", "date", "time"];
       else eventInfo = ["address", "date", "time"];
       break;
-    case "performance-catering":
+    case "team-catering":
       eventInfo = ["address", "date", "time"];
       break;
     default:

@@ -122,7 +122,7 @@ function initFormMessage(type) {
         "private-event":
           "Your order has been received! Our team will be in touch shortly to help craft your event menu.",
         "luxury-catering": "Please proceed to checkout to complete your order.",
-        "performance-catering":
+        "team-catering":
           "Your order has been received! Our team will be in touch shortly to help craft your menu.",
         "meal-plan":
           "You will now be redirected to checkout. Our team will be in touch shortly to help craft your meal plan.",
@@ -130,13 +130,13 @@ function initFormMessage(type) {
       const successButtonText = {
         "private-event": "Home",
         "luxury-catering": "Checkout",
-        "performance-catering": "Home",
+        "team-catering": "Home",
         "meal-plan": "Checkout",
       };
       const successButtonLinks = {
         "private-event": "/",
         "luxury-catering": "/checkout",
-        "performance-catering": "/",
+        "team-catering": "/",
         "meal-plan": userInput["checkout-link"],
       };
 

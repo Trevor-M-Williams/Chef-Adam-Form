@@ -187,8 +187,7 @@ function initForm() {
 
   if (!menuState["luxury-catering-menu"])
     menuState["luxury-catering-menu"] = {};
-  if (!menuState["performance-catering-menu"])
-    menuState["performance-catering-menu"] = {};
+  if (!menuState["team-catering-menu"]) menuState["team-catering-menu"] = {};
 
   const formOptionImages = document.querySelectorAll(".form-option-image");
   formOptionImages.forEach((image) => {
@@ -267,14 +266,7 @@ export function initFormSteps() {
       "additional-info",
       "review",
     ],
-    "performance-catering": [
-      "service",
-      "contact-info",
-      "event-info",
-      "performance-catering-menu",
-      "additional-info",
-      "review",
-    ],
+    "team-catering": ["service", "contact-info", "additional-info", "review"],
     "meal-plan": [
       "service",
       "contact-info",
@@ -358,6 +350,17 @@ export function updateStep(incrementor) {
       if (!mealPlanOptionsInitialized) {
         initMealPlanOptions();
         mealPlanOptionsInitialized = true;
+      }
+      break;
+    case "additional-info":
+      const additionalInfoInput = document.querySelector("#additional-info");
+
+      if (userInput["service-info"]["service"] === "team-catering") {
+        additionalInfoInput.placeholder =
+          "Tell us date(s), location, time of day, etc. We deliver to stadiums and airports.";
+      } else {
+        additionalInfoInput.placeholder =
+          "Please list any dishes that you’d like to include and any other requests you have, in addition to any other details of your booking.";
       }
       break;
     case "review":

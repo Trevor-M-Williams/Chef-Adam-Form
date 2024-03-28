@@ -51,7 +51,7 @@ export function updateHeader() {
     service: "What brings you in?",
     venue: "Where will your event be held?",
     ["luxury-catering-menu"]: "Luxury Catering Menu",
-    ["performance-catering-menu"]: "Performance Catering Menu",
+    ["team-catering-menu"]: "Team Catering Menu",
     ["private-event-menu"]: "Menu",
     ["contact-info"]: "Contact Information",
     ["event-info"]: "Event Information",
@@ -68,7 +68,7 @@ export function updateHeader() {
     ["luxury-catering-menu"]: `
           <div>View the full menu <a href="/menus/luxury-catering" class="form-link" target="_blank">here</a>.</div>
         `,
-    ["performance-catering-menu"]: "Scroll click or tap to view our menu.",
+    ["team-catering-menu"]: "Scroll click or tap to view our menu.",
     ["private-event-menu"]: "Scroll click or tap to view our menu.",
     ["contact-info"]:
       venue === "home"

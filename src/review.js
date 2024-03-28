@@ -86,7 +86,9 @@ export function initReview() {
   initContactSection();
 
   if (service === "meal-plan") initMealPlanSection();
-  else initEventSection();
+  else if (service === "private-event" || service === "luxury-catering") {
+    initEventSection();
+  }
 
   if (service === "luxury-catering") initMenuSection();
 
