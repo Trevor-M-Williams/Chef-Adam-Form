@@ -172,8 +172,7 @@ export function initReview() {
       const label = item.replaceAll("-", " ");
       let value = athleteInfo[item];
       if (typeof value === "string") value = value.replaceAll("-", " ");
-      if (!value || item === "notice-confirmation" || item === "height-in")
-        continue;
+      if (!value || item === "t&c" || item === "height-in") continue;
       reviewItem.classList.add("review-item");
       reviewItem.innerHTML = `
               <div class="review-item-name">${label}:</div>
